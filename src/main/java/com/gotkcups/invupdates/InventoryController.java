@@ -78,9 +78,8 @@ public class InventoryController {
   }
   
   @RequestMapping("/info")
-  public String check(@RequestParam(value = "json", defaultValue = "{\"value\": \"blank\"}") String json) {
+  public void update(@RequestParam(value = "json", defaultValue = "{\"value\": \"blank\"}") String json) {
     System.out.println("json is" + json);
-    return json;
   }
   
 }
