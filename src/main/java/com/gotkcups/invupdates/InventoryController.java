@@ -5,6 +5,8 @@
  */
 package com.gotkcups.invupdates;
 
+import com.gotkcups.data.ProductInfo;
+import com.gotkcups.data.VariantInfo;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -73,6 +75,12 @@ public class InventoryController {
     info.getVariants().add(var);
     
     return info;
+  }
+  
+  @RequestMapping("/info")
+  public String check(@RequestParam(value = "json", defaultValue = "{\"value\": \"blank\"}") String json) {
+    System.out.println("json is" + json);
+    return json;
   }
   
 }
