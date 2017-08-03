@@ -53,8 +53,6 @@ public class SamsclubProcessor {
               vendor.put("defaultshipping", Double.parseDouble(Utilities.getApplicationProperty("samsclub.defaultshipping")));
             }
           }
-          
-          System.out.println();
           break;
         }
       }

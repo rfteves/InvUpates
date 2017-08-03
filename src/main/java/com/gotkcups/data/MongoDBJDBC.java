@@ -6,6 +6,7 @@
 package com.gotkcups.data;
 
 
+/*import com.gotkcups.io.Utilities;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.bson.Document;
-import org.bson.conversions.Bson;
+import org.bson.conversions.Bson;*/
 
 /**
  *
@@ -29,7 +30,7 @@ import org.bson.conversions.Bson;
  */
 public class MongoDBJDBC {
 
-  public static void main(String args[]) {
+  /*public static void main(String args[]) {
 
     try {
       Collection<Document> docs = getDocuments("productinfos");
@@ -101,7 +102,7 @@ public class MongoDBJDBC {
     // To connect to mongodb server
     MongoDatabase database = null;
     if (!DATABASES.containsKey(name)) {
-      MongoCredential credential = MongoCredential.createCredential("username", "admin", "password".toCharArray());
+      MongoCredential credential = MongoCredential.createCredential(Utilities.getApplicationProperty("mongodb.user"), "admin", Utilities.getApplicationProperty("mongodb.password").toCharArray());
       MongoClientOptions options = MongoClientOptions.builder().sslEnabled(false).build();
       MongoClient client = new MongoClient(new ServerAddress("teves.us", 27017),
               Arrays.asList(credential), options);
@@ -117,5 +118,5 @@ public class MongoDBJDBC {
       database = DATABASES.get(name);
     }
     return database;
-  }
+  }*/
 }
