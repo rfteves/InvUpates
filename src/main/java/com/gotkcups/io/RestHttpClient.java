@@ -58,7 +58,7 @@ public class RestHttpClient {
                 sb.append("\r\n");
             }
             if (response.getStatusLine().getStatusCode() != 200) {
-                sb.insert(0, "\r\n\r\n\r\n");
+                sb.insert(0, "Severe Error\r\n\r\n\r\n");
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatusLine().getStatusCode() + sb.toString());
             }
             json = sb.toString();

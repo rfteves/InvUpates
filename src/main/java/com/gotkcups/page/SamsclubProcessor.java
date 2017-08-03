@@ -7,6 +7,7 @@ package com.gotkcups.page;
 
 import com.gotkcups.data.Constants;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -23,12 +24,12 @@ public class SamsclubProcessor {
     //<button class="biggreenbtn" tabindex="2" id="addtocartsingleajaxonline"> Ship this item</button>
     private static StringBuilder pad = new StringBuilder();
 
-    public static void costing(Document vendors, String html) {
+    public static void costing(Document vendor, String html) {
         if (html == null) {
-            vendors.put(Constants.Status, Constants.Page_Not_Available);
+            vendor.put(Constants.Status, Constants.Page_Not_Available);
             return;
         }
-        String s = "variantsku";
+        String s = (String)vendor.get("sku");
         String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
         String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
         if (html.indexOf("<div id=moneyBoxJson style=display:none>") > 0) {
@@ -37,6 +38,8 @@ public class SamsclubProcessor {
             pad.setLength(0);
             pad.append(StringEscapeUtils.unescapeHtml(html.substring(start, end)));
             Document mbj = Document.parse(pad.toString());
+            List<Document> availableSkus = (List)mbj.get("availableSKUs");
+            System.out.println();
 
             /*for (UrlProductInfo ud : uds) {
                 for (GsonData dg : products.getMap().get("availableSKUs").getChildren()) {

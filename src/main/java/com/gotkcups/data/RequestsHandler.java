@@ -5,6 +5,7 @@
  */
 package com.gotkcups.data;
 
+import com.gotkcups.page.DocumentProcessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,7 +64,7 @@ public class RequestsHandler extends Thread {
                 removing = false;
                 this.notify();
             }
-            DocumentProcessor.process(vendors);
+            DocumentProcessor.accept(vendors);
             synchronized (this) {
                 while (DocumentProcessor.isProcessing()) {
                     try {
@@ -78,5 +79,11 @@ public class RequestsHandler extends Thread {
                 this.notify();
             }
         }
+    }
+    
+    public static void main(String[]args) {
+        String s = "{ \"vendors\" : [{ \"variantid\" : { \"$numberLong\" : \"38125826890\" }, \"productid\" : { \"$numberLong\" : \"10135803082\" }, \"taxable\" : true, \"sku\" : \"399124S\", \"url\" : \"https://www.samsclub.com/prod1790976.ip\", \"defaultshipping\" : 6.0, \"pageid\" : \"399124S\" }] }";
+        Document vendors = Document.parse(s);
+        register(vendors);
     }
 }
