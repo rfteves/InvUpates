@@ -14,4 +14,6 @@ public interface Constants {
     String Page_Not_Available = "Page not available.";
     String Out_Of_Stock = "Out of stock";
     String In_Stock = "In stock";
+    String Final_Cost = "Final cost";
+    String List_Cost = "List cost";
 }
