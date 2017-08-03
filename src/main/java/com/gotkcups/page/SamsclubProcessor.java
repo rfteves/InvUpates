@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bson.Document;
 
 /**
@@ -27,22 +28,17 @@ public class SamsclubProcessor {
             vendors.put(Constants.Status, Constants.Page_Not_Available);
             return;
         }
-        String s = uds.get(0).getProduct().getVariantsku();
+        String s = "variantsku";
         String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
         String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
         if (html.indexOf("<div id=moneyBoxJson style=display:none>") > 0) {
             int start = html.indexOf("<div id=moneyBoxJson style=display:none>") + "<div id=moneyBoxJson style=display:none>".length();
             int end = html.indexOf("</div>", start);
             pad.setLength(0);
-            //pad.append("{\"moneyBoxJson\":");
             pad.append(StringEscapeUtils.unescapeHtml(html.substring(start, end)));
-            //pad.append("}");
-            try {
-                products = GsonMapper.getInstance(pad.toString());
-            } catch (IOException ex) {
-                Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            for (UrlProductInfo ud : uds) {
+            Document mbj = Document.parse(pad.toString());
+
+            /*for (UrlProductInfo ud : uds) {
                 for (GsonData dg : products.getMap().get("availableSKUs").getChildren()) {
                     if (ud.getProduct().getVariantsku().equals(dg.getString("itemNo").concat("S"))) {
                         if (dg.get("onlineInventoryVO") != null) {
@@ -67,38 +63,38 @@ public class SamsclubProcessor {
             uds.stream().map(ud -> ud.getProduct()).filter(ud -> !ud.isInstock()).forEach(ud -> {
                 ud.setStatus(ProductStatus.PRODUCT_OUT_OF_STOCK);
                 ud.setInstock(false);
-            });
+            });*/
         } else if (html.indexOf(id) != -1) {
-            UrlProductInfo ud = uds.get(0);
+            //UrlProductInfo ud = uds.get(0);
             if (html.indexOf("<link itemprop=availability href=\"http://schema.org/InStock\"/>") > 0
-                    && html.indexOf("<button class=biggreenbtn tabindex=2 id=addtocartsingleajaxonline> Ship this item</button>") > 0) {
+              && html.indexOf("<button class=biggreenbtn tabindex=2 id=addtocartsingleajaxonline> Ship this item</button>") > 0) {
                 String pattern = "<span class=hidden itemprop=price>[0-9]{1,}.[0-9]{2}</span>";
-                ud.getProduct().setInstock(true);
+                /*ud.getProduct().setInstock(true);
                 ud.getProduct().setStatus(Product.ProductStatus.PRODUCT_IN_STOCK);
                 ud.getProduct().setCost(retrieveCost(html));
                 if (html.indexOf("<div class=freeDelvryTxt>") > 0) {
                     ud.getProduct().setShipping(0);
                 } else {
                     ud.getProduct().setShipping(ud.getProduct().getDefaultShipping());
-                }
+                }*/
             } else if (html.indexOf("<link itemprop=availability href=\"http://schema.org/OutOfStock\"/>") > 0) {
-                ud.getProduct().setStatus(Product.ProductStatus.PRODUCT_OUT_OF_STOCK);
+                //ud.getProduct().setStatus(Product.ProductStatus.PRODUCT_OUT_OF_STOCK);
             } else {
-                ud.getProduct().setInstock(false);
+                /*ud.getProduct().setInstock(false);
                 int flag = html.indexOf("online_stock_status\":\"outofstock");
                 if (flag != -1) {
                     uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_OUT_OF_STOCK));
                 } else {
                     uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_LOW_OF_STOCK));
-                }
+                }*/
 
             }
         } else if (html.indexOf(id2) != -1) {
-            if (html.indexOf("this item is not available in your selected club") != -1 ||
-                    html.indexOf("Select a club for price and availability") != -1) {
-                uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_OUT_OF_STOCK));
+            if (html.indexOf("this item is not available in your selected club") != -1
+              || html.indexOf("Select a club for price and availability") != -1) {
+                //uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_OUT_OF_STOCK));
             } else if (html.indexOf(">Add to cart</button>") != -1) {
-                UrlProductInfo ud = uds.get(0);
+                /*UrlProductInfo ud = uds.get(0);
                 ud.getProduct().setInstock(true);
                 ud.getProduct().setStatus(Product.ProductStatus.PRODUCT_IN_STOCK);
                 ud.getProduct().setCost(retrieveCost(html));
@@ -106,13 +102,13 @@ public class SamsclubProcessor {
                     ud.getProduct().setShipping(0);
                 } else {
                     ud.getProduct().setShipping(ud.getProduct().getDefaultShipping());
-                }
+                }*/
             } else {
-                uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PAGE_NOT_AVAILABLE));
+                //uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PAGE_NOT_AVAILABLE));
             }
 
         } else {
-            uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_NOT_FOUND));
+            //uds.stream().forEach(p -> p.getProduct().setStatus(Product.ProductStatus.PRODUCT_NOT_FOUND));
         }
         int qty = 1;
         if (html.indexOf("<div class=\"twoChannel\">") != -1) {
@@ -126,7 +122,7 @@ public class SamsclubProcessor {
             }
         }
         int finalQty = qty;
-        uds.stream().map(p -> p.getProduct()).filter(ProductInfo::isInstock).forEach(o -> {
+        /*uds.stream().map(p -> p.getProduct()).filter(ProductInfo::isInstock).forEach(o -> {
             double cost = o.getCost();
             if (o.getShipping() == 0 && o.getCost() < 50) {
                 cost = o.getCost() * 1.04;
@@ -140,7 +136,7 @@ public class SamsclubProcessor {
             } else {
                 o.setMinqty(finalQty);
             }
-        });
+        });*/
     }
 
     private static double retrieveCost(String html) {
@@ -156,7 +152,7 @@ public class SamsclubProcessor {
             if (m.find()) {
                 m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(m.group());
                 if (m.find()) {
-                    retval = Math.max(retval,  Double.parseDouble(m.group()));
+                    retval = Math.max(retval, Double.parseDouble(m.group()));
                 }
             }
         }
