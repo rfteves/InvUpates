@@ -5,8 +5,6 @@
  */
 package com.gotkcups.invupdates;
 
-import com.gotkcups.data.ProductInfo;
-import com.gotkcups.data.VariantInfo;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -63,22 +61,10 @@ public class InventoryController {
   private static final String template = "Hello, %s!";
   private final AtomicLong counter = new AtomicLong();
   
-  @RequestMapping("/{productId}/{variantId}")
-  public ProductInfo check(@PathVariable(value = "productId") String productId, @PathVariable(value = "variantId") String variantId, @RequestParam(value = "url") String url) {
-    ProductInfo info = new ProductInfo();
-    info.setId(Long.valueOf(productId));
-    VariantInfo var = new VariantInfo();
-    var.setId(Long.valueOf(variantId));
-    var.setProductId(Long.valueOf(productId));
-    var.setCompare_at_price(100);
-    var.setPrice(85);
-    info.getVariants().add(var);
-    
-    return info;
-  }
+  
   
   @RequestMapping("/info")
-  public void update(@RequestParam(value = "json", defaultValue = "{\"value\": \"blank\"}") String json) {
+  public void update(@RequestParam(value = "json", defaultValue = "{\"vendors\": []") String json) {
     System.out.println("json is" + json);
   }
   
