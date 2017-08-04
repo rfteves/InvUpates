@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bson.Document;
 
 /**
@@ -37,10 +39,14 @@ public class DocumentProcessor extends Thread {
             fetchCost(vendor, key, urls.get(key));
             calculatePrice(vendor);
         });
-        System.out.println();
     }
     
     private static String fetchPage(String url) {
+      try {
+        Thread.sleep(1500);
+      } catch (InterruptedException ex) {
+        Logger.getLogger(DocumentProcessor.class.getName()).log(Level.SEVERE, null, ex);
+      }
         String html = RestHttpClient.processGetHtml(url);
         return html;
     }

@@ -52,7 +52,9 @@ public class RestHttpClient {
             getRequest.setConfig(localConfig);
             getRequest.addHeader("Content-Type", "text/html;charset=UTF-8");
             getRequest.addHeader("Accept", "text/html;charset=UTF-8");
-            getRequest.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0");
+            String edge = "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev> Edge/<EdgeHTML Rev>.<Windows Build>";
+            String other = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
+            getRequest.addHeader("User-Agent", edge);
             HttpResponse response = httpClient.execute(getRequest);
             in = new Scanner(response.getEntity().getContent());
             while (in.hasNext()) {
@@ -75,9 +77,6 @@ public class RestHttpClient {
     }
 
     public static String processGet(String url) {
-         Log log = LogFactory.getLog("org.apache");
-         LogFactory.releaseAll();
-         
         String json = null;
         Scanner in = null;
         try {

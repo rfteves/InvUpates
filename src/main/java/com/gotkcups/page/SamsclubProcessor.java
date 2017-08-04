@@ -31,6 +31,9 @@ public class SamsclubProcessor {
             return;
         }
         String s = (String) vendor.get("sku");
+        if (s.equals("586754S")) {
+          System.out.println();
+        }
         String sku = s.substring(0, s.length() - 1);
         String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
         String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
@@ -80,7 +83,12 @@ public class SamsclubProcessor {
         } else {
             vendor.put(Constants.Status, Constants.Product_Not_Found);
         }
+        if (vendor.getString(Constants.Status).equals(Constants.In_Stock) &&
+                (vendor.getDouble(Constants.Final_Cost) == null || vendor.getDouble(Constants.Final_Cost) <= 0)) {
+            vendor.put(Constants.Status, Constants.Product_Cost_Not_Found);
+        }
         if (!vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
+            System.out.println(vendor.getString(Constants.Status) + ": "+vendor);
             return;
         }
         int qty = retrieveMinimumQuantity(vendor);
@@ -93,7 +101,7 @@ public class SamsclubProcessor {
         }
         cost = Math.floor(cost * 100) / 100;
         vendor.put(Constants.Final_Cost, cost);
-        System.out.println("vendor: "+vendor);
+        System.out.println(vendor.getString(Constants.Status) + ": "+vendor);
     }
 
     private static double retrieveCost(String html) {
@@ -110,6 +118,7 @@ public class SamsclubProcessor {
                 m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(m.group());
                 if (m.find()) {
                     retval = Math.max(retval, Double.parseDouble(m.group()));
+                    break;
                 }
             }
         }
@@ -127,6 +136,7 @@ public class SamsclubProcessor {
                         } else {
                             retval += r / 100;
                         }
+                        break;
                     }
                 }
             }
@@ -145,6 +155,7 @@ public class SamsclubProcessor {
                         } else {
                             retval += r / 100;
                         }
+                        break;
                     }
                 }
             }

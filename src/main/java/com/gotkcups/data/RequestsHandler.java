@@ -89,8 +89,7 @@ public class RequestsHandler extends Thread {
     }
 
     public static void main(String[] args) throws Exception {
-      LogFactory factory= LogFactory.getFactory();
-      log.debug("ccccc");
+        log.debug("ccccc");
         Map<String, String> params = new HashMap<>();
         params.put("fields", "id,variants");
         Document resp = Utilities.getAllProducts("prod", params, 50, 150);
@@ -109,7 +108,6 @@ public class RequestsHandler extends Thread {
                         String value = metafield.getString("value");
                         Document values = Document.parse(value);
                         register(values);
-                        System.out.println();
                     }
                 }
             }
