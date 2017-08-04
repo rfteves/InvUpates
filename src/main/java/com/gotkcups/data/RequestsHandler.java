@@ -8,17 +8,14 @@ package com.gotkcups.data;
 import com.gotkcups.io.RestHttpClient;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.page.DocumentProcessor;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
 
 /**
@@ -27,6 +24,7 @@ import org.bson.Document;
  */
 public class RequestsHandler extends Thread {
 
+    private final static Log log = LogFactory.getLog(RequestsHandler.class);
     private static List<Document> REQUESTS = new ArrayList<>();
     private static RequestsHandler HANDLER;
     private boolean removing, processing;
@@ -89,41 +87,10 @@ public class RequestsHandler extends Thread {
             }
         }
     }
-    private static final LogManager logManager = LogManager.getLogManager();
-
-    static {
-        try {
-            LogManager.getLogManager().reset();
-            logManager.readConfiguration(new FileInputStream("./logging.properties"));
-            java.util.logging.Logger.getLogger("org.apache.http.wire").setLevel(java.util.logging.Level.WARNING);
-            java.util.logging.Logger.getLogger("org.apache.http.headers").setLevel(java.util.logging.Level.WARNING);
-            System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-            System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-            System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "ERROR");
-            System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "ERROR");
-            System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.headers", "ERROR");
-        } catch (IOException ex) {
-            Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    static {
-        try {
-            org.apache.log4j.LogManager.resetConfiguration();
-            PropertyConfigurator.configure("./log4j.properties");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private static final Logger LOGGER = Logger.getLogger("confLogger");
 
     public static void main(String[] args) throws Exception {
-        LOGGER.fine("Fine message logged");
-        System.out.println();
+      LogFactory factory= LogFactory.getFactory();
+      log.debug("ccccc");
         Map<String, String> params = new HashMap<>();
         params.put("fields", "id,variants");
         Document resp = Utilities.getAllProducts("prod", params, 50, 150);
