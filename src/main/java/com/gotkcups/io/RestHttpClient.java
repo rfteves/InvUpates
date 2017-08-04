@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 import java.util.Scanner;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -73,6 +75,9 @@ public class RestHttpClient {
     }
 
     public static String processGet(String url) {
+         Log log = LogFactory.getLog("org.apache");
+         LogFactory.releaseAll();
+         
         String json = null;
         Scanner in = null;
         try {
