@@ -9,8 +9,6 @@ import com.gotkcups.data.Constants;
 import com.gotkcups.io.Utilities;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -88,7 +86,6 @@ public class SamsclubProcessor {
             vendor.put(Constants.Status, Constants.Product_Cost_Not_Found);
         }
         if (!vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
-            System.out.println(vendor.getString(Constants.Status) + ": "+vendor);
             return;
         }
         int qty = retrieveMinimumQuantity(vendor);
@@ -99,9 +96,12 @@ public class SamsclubProcessor {
         } else {
             cost *= 1.02;
         }
+        if (vendor.getDouble(Constants.Shipping) == null) {
+          vendor.put(Constants.Shipping, 0d);
+        }
+        vendor.put(Constants.Discounted, false);
         cost = Math.floor(cost * 100) / 100;
         vendor.put(Constants.Final_Cost, cost);
-        System.out.println(vendor.getString(Constants.Status) + ": "+vendor);
     }
 
     private static double retrieveCost(String html) {

@@ -22,4 +22,8 @@ public interface Constants {
     String In_Stock = "In stock";
     String Final_Cost = "Final cost";
     String List_Cost = "List cost";
+    String Taxable = "taxable";
+    String Discounted = "discounted";
+    String Final_Price = "Final price";
+    String List_Price = "List price";
 }
