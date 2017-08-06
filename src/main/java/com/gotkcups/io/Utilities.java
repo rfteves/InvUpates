@@ -102,6 +102,22 @@ public class Utilities {
             return value;
         }
     }
+    
+    public static <T> Object objectify(String xml, T object) {
+        Object retval = null;
+        try {
+            xml = Utilities.insertSpace(xml);
+            JAXBContext jaxbContext = JAXBContext.newInstance(object.getClass());
+            Unmarshaller jaxbMarshaller = jaxbContext.createUnmarshaller();
+            StringWriter sw = new StringWriter();
+            retval = jaxbMarshaller.unmarshal(new InputStreamReader(new ByteArrayInputStream(xml.getBytes())));
+        } catch (JAXBException ex) {
+            System.out.println("XML:" + xml);
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            return retval;
+        }
+    }
 
     private static String[] DATE_USA_LOCALE_PATTERNS = {
         "yyyy.MM.dd G 'at' HH:mm:ss z",

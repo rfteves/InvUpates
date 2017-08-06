@@ -36,11 +36,16 @@ public class DocumentProcessor extends Thread {
     obj.stream().forEach(vendor -> {
       String key = (String) vendor.get("url");
       if (!urls.containsKey(key)) {
-        urls.put(key, fetchPage(key));
+        String html = fetchPage(key);
+        if (html != null) {
+          urls.put(key, html);
+        }
       }
-      fetchCost(vendor, key, urls.get(key));
-      calculatePrice(vendor);
-      System.out.println(vendor.getString(Constants.Status) + ": " + vendor);
+      if (urls.containsKey(key)) {
+        fetchCost(vendor, key, urls.get(key));
+        calculatePrice(vendor);
+        System.out.println(vendor.getString(Constants.Status) + ": " + vendor);
+      }
     });
   }
 
@@ -50,13 +55,27 @@ public class DocumentProcessor extends Thread {
     } catch (InterruptedException ex) {
       Logger.getLogger(DocumentProcessor.class.getName()).log(Level.SEVERE, null, ex);
     }
-    String html = RestHttpClient.processGetHtml(url);
+    String html = null;
+    int trials = 3;
+    while (html == null && trials-- > 0) {
+      try {
+        html = RestHttpClient.processGetHtml(url);
+      } catch (Throwable e) {
+        System.err.println("Unable to fetch " + url);
+      }
+    }
     return html;
   }
 
   private static void fetchCost(Document vendor, String key, String html) {
     if (key.contains("samsclub.com")) {
       SamsclubProcessor.costing(vendor, html);
+    } else if (key.contains("costco.com")) {
+      CostcoProcessor.costing(vendor, html);
+    } else if (key.contains("keurig.com")) {
+      KeurigProcessor.costing(vendor, html);
+    } else if (key.contains("bjs.com")) {
+      BjsProcessor.costing(vendor, html);
     }
   }
   public final static double MARKUP_TAXABLE = 0.835;
@@ -64,7 +83,10 @@ public class DocumentProcessor extends Thread {
   public final static double MARKUP_DISCOUNT = 0.035;
 
   private static void calculatePrice(Document vendor) {
-    if (!vendor.get(Constants.Status).equals(Constants.In_Stock)) {
+    if (!vendor.containsKey(Constants.Status)) {
+      vendor.put(Constants.Status, Constants.Page_Not_Available);
+      return;
+    } else if (!vendor.get(Constants.Status).equals(Constants.In_Stock)) {
       return;
     }
     double cost = vendor.getDouble(Constants.Final_Cost);
