@@ -34,24 +34,28 @@ public class DocumentProcessor extends Thread {
     List<Document> obj = (List) vendors.get("vendors");
     Map<String, String> urls = new HashMap<>();
     obj.stream().forEach(vendor -> {
+      //System.out.println("Start processing " + vendor.getString(Constants.Sku));
       String key = (String) vendor.get("url");
+      String html = null;
       if (!urls.containsKey(key)) {
-        String html = fetchPage(key);
-        if (html != null) {
-          urls.put(key, html);
-        }
+        html = fetchPage(key);
+        urls.put(key, html);
+      } else {
+        html = urls.get(key);
       }
-      if (urls.containsKey(key)) {
+      if (html == null || html.startsWith("Severe Error")) {
+        vendor.put(Constants.Status, Constants.Page_Not_Available);
+      } else {
         fetchCost(vendor, key, urls.get(key));
         calculatePrice(vendor);
-        System.out.println(vendor.getString(Constants.Status) + ": " + vendor);
       }
+      //System.out.println("Done processing " + vendor.getString(Constants.Sku));
     });
   }
 
   private static String fetchPage(String url) {
     try {
-      Thread.sleep(1500);
+      Thread.sleep(500);
     } catch (InterruptedException ex) {
       Logger.getLogger(DocumentProcessor.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -80,7 +84,7 @@ public class DocumentProcessor extends Thread {
   }
   public final static double MARKUP_TAXABLE = 0.835;
   public final static double MARKUP_NON_TAXABLE = 0.9;
-  public final static double MARKUP_DISCOUNT = 0.035;
+  public final static double MARKUP_DISCOUNT = 0.05;
 
   private static void calculatePrice(Document vendor) {
     if (!vendor.containsKey(Constants.Status)) {

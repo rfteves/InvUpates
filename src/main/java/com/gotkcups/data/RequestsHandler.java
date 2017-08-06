@@ -23,7 +23,6 @@ public class RequestsHandler extends Thread {
   private final Log log = LogFactory.getLog(RequestsHandler.class);
   private final static List<Document> REQUESTS = new ArrayList<>();
   private static RequestsHandler HANDLER;
-  private boolean removing, processing;
 
   public static void register(Document vendors) {
     if (HANDLER == null || !HANDLER.isAlive()) {
@@ -39,7 +38,7 @@ public class RequestsHandler extends Thread {
 
   private void add(Document vendors) {
     synchronized (this) {
-      while (removing) {
+      while (!REQUESTS.isEmpty()) {
         try {
           this.wait();
         } catch (InterruptedException ex) {
@@ -47,7 +46,6 @@ public class RequestsHandler extends Thread {
         }
       }
       REQUESTS.add(vendors);
-      removing = true;
       this.notifyAll();
     }
   }
@@ -64,23 +62,9 @@ public class RequestsHandler extends Thread {
           }
         }
         vendors = REQUESTS.remove(0);
-        removing = false;
-        this.notify();
+        this.notifyAll();
       }
       DocumentProcessor.accept(vendors);
-      synchronized (this) {
-        while (DocumentProcessor.isProcessing()) {
-          try {
-            this.wait(100);
-          } catch (InterruptedException ex) {
-            Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
-          }
-          removing = false;
-          this.notify();
-        }
-        removing = false;
-        this.notify();
-      }
     }
   }
 }

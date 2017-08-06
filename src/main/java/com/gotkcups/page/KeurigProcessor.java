@@ -40,6 +40,7 @@ public class KeurigProcessor {
       select.getOption().stream().filter(o -> product.getString("sku").startsWith(o.getDataCode().concat("K"))).forEach(o -> {
         if (o.getDataStock().equalsIgnoreCase("inStock") && o.getDataPurchasable().equalsIgnoreCase("true")) {
           product.put(Constants.Status, Constants.In_Stock);
+          product.put(Constants.Discounted, false);
           double cost = Double.parseDouble(o.getDataPrice().substring(1));
           cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BEVERAGES)) * 100) * 0.01;
           if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
@@ -71,6 +72,7 @@ public class KeurigProcessor {
       span.getAnchor().stream().filter(o -> product.getString("sku").startsWith(o.getDataCode().concat("K"))).forEach(o -> {
         if (o.getDataPurchasable().equalsIgnoreCase("true")) {
           product.put(Constants.Status, Constants.In_Stock);
+          product.put(Constants.Discounted, false);
           double cost = Double.parseDouble(o.getDataPrice().substring(1));
           cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BREWERS)) * 100) * 0.01;
           if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
@@ -87,6 +89,7 @@ public class KeurigProcessor {
     } else if (url.contains("/Coffee-Makers") && html.contains("<div class=\"in-stock\"")
       && html.contains("<button id=\"addToCartButton\" type=\"submit\"")) {
       product.put(Constants.Status, Constants.In_Stock);
+          product.put(Constants.Discounted, false);
       Matcher m = Pattern.compile("<div class=\"big-price left\">[\r\n\t ]+\\$[0-9]{1,}.[0-9]{2}</div>").matcher(html);
       if (m.find()) {
         m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(m.group());

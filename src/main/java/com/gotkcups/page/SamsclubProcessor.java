@@ -29,8 +29,8 @@ public class SamsclubProcessor {
       return;
     }
     String s = (String) vendor.get("sku");
-    if (s.equals("586754S")) {
-      System.out.println();
+    if (s.equals("822991S")) {
+      int debug = 0;
     }
     String sku = s.substring(0, s.length() - 1);
     String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
@@ -42,18 +42,20 @@ public class SamsclubProcessor {
       pad.append(StringEscapeUtils.unescapeHtml(html.substring(start, end)));
       Document mbj = Document.parse(pad.toString());
       List<Document> availableSkus = (List) mbj.get("availableSKUs");
-      for (Document available : availableSkus) {
-        if (available.getString("itemNo").equals(sku)) {
+      vendor.put(Constants.Status, Constants.Out_Of_Stock);
+      availableSkus.stream().filter(available -> available.getString("itemNo").equals(sku) &&
+        available.containsKey("onlineInventoryVO")).forEach(available -> {
           Document onlineInv = (Document) available.get("onlineInventoryVO");
           Document onlinePrice = (Document) available.get("onlinePriceVO");
+          if (onlineInv == null || onlinePrice == null) {
+            int debug = 0;
+          }
           vendor.put(Constants.Status, "inStock".equals(onlineInv.getString("status")) ? Constants.In_Stock : Constants.Out_Of_Stock);
           vendor.put(Constants.Final_Cost, onlinePrice.getDouble("finalPrice"));
           vendor.put(Constants.List_Cost, onlinePrice.getDouble("listPrice"));
           double shipping = retrieveShipping(vendor, html);
           vendor.put(Constants.Shipping, shipping);
-          break;
-        }
-      }
+      });
     } else if (html.contains(id)) {
       if (html.contains("<link itemprop=availability href=\"http://schema.org/InStock\"/>")
         && html.contains("<button class=biggreenbtn tabindex=2 id=addtocartsingleajaxonline> Ship this item</button>")) {
@@ -81,6 +83,9 @@ public class SamsclubProcessor {
     } else {
       vendor.put(Constants.Status, Constants.Product_Not_Found);
     }
+    if (!vendor.containsKey(Constants.Status)) {
+      int debug =0;
+    }
     if (vendor.getString(Constants.Status).equals(Constants.In_Stock)
       && (vendor.getDouble(Constants.Final_Cost) == null || vendor.getDouble(Constants.Final_Cost) <= 0)) {
       vendor.put(Constants.Status, Constants.Product_Cost_Not_Found);
@@ -93,7 +98,7 @@ public class SamsclubProcessor {
     double cost = vendor.getDouble(Constants.Final_Cost);
     if (vendor.getDouble(Constants.Shipping) == 0 && cost < 50) {
       cost *= 1.04;
-    } else {
+    } else if ( cost < 50) {
       cost *= 1.02;
     }
     if (vendor.getDouble(Constants.Shipping) == null) {
@@ -177,7 +182,7 @@ public class SamsclubProcessor {
   }
 
   private static int retrieveMinimumQuantity(Document vendor) {
-    if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getDouble(Constants.Default_Min_Quantity) <= 0) {
+    if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
       return vendor.getInteger(Constants.Default_Min_Quantity);

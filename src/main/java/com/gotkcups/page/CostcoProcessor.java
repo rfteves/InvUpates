@@ -172,7 +172,6 @@ public class CostcoProcessor {
       for (String productOption : productOptions) {
         if (v.containsKey(productOption)) {
           value = StringEscapeUtils.unescapeHtml(v.getString(productOption));
-          System.out.println();
           break;
         }
       }

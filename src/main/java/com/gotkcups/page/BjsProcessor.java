@@ -37,6 +37,7 @@ public class BjsProcessor {
         if (start != -1) {
           vendor.put(Constants.Status, Constants.In_Stock);
           vendor.put(Constants.Min_Quantity, 1);
+          vendor.put(Constants.Discounted, false);
           start = html.indexOf("class=price4 id=prodFamilyId");
           start = html.indexOf("<span>", start);
           end = html.indexOf("</span>", start);

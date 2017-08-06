@@ -31,4 +31,19 @@ public interface Constants {
     String Costco_Products = "Costco products";
     String Keurig_Beverage_Options = "Keurig beverage options";
     String Keuirg_Brewer_Options = "Keurig brewer options";
+    String Inventory_Quantity = "inventory_quantity";
+    String Price = "price";
+    String Compare_At_Price = "compare_at_price";
+    String Sku = "sku";
+    String Variant = "variant";
+    String Production = "prod";
+    String Title = "title";
+    String Namespace = "namespace";
+    String Inventory = "inventory";
+    String Vendor = "vendor";
+    String Metafields = "metafields";
+    String Product_Id = "product_id";
+    String ProductId = "productid";
+    String Key = "key";
+    String Id = "id";
 }
