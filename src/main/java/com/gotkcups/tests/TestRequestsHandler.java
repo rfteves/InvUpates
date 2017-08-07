@@ -49,6 +49,9 @@ public class TestRequestsHandler {
           || variant.getLong("product_id") == 950756417033l)) {
           //continue;
         }
+        if (variant.getLong(Constants.Id) != 35267581770l) {
+          continue;
+        }
         if (!variant.getString(Constants.Sku).toLowerCase().endsWith("k")) {
           continue;
         }
@@ -144,6 +147,8 @@ public class TestRequestsHandler {
         }
         Document pack = new Document();
         pack.put(Constants.Variant, change);
+        message.insert(0, ", ");
+        message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
         //RestHttpClient.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
