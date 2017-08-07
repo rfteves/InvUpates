@@ -45,15 +45,15 @@ public class TestRequestsHandler {
     for (Document product : products) {
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
-        if (!(variant.getLong("product_id") == 10135803082l
-          || variant.getLong("product_id") == 950756417033l)) {
+        if (!(variant.getLong("product_id") == 9760583434l
+          || variant.getLong("product_id") == 93350756417033l)) {
           //continue;
         }
-        if (variant.getLong(Constants.Id) != 35267581770l) {
-          continue;
+        if (variant.getLong(Constants.Id) != 35213584842l) {
+          //continue;
         }
-        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("k")) {
-          continue;
+        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("s")) {
+          //continue;
         }
         if (limit++ > 200) {
           //break;
@@ -63,6 +63,7 @@ public class TestRequestsHandler {
         sorted.add(d);
       }
     }
+    int ordinal = 0;
     for (Document variant : sorted) {
       Document metafield = Utilities.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
@@ -70,6 +71,7 @@ public class TestRequestsHandler {
         Document values = Document.parse(value);
         variant.put("results", values);
         register(values);
+        System.out.println(++ordinal + " of " + sorted.size());
       }
     }
     for (Document variant : sorted) {
@@ -152,6 +154,7 @@ public class TestRequestsHandler {
         System.out.println(message.toString());
         int debug = 0;
         //RestHttpClient.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        Thread.sleep(1000);
       }
     }
   }

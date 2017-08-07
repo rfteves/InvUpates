@@ -118,7 +118,7 @@ public class CostcoProcessor {
       }
     }
     vendor.put(Constants.Discounted, !expired);
-    int qty = retrieveMinimumQuantity(vendor);
+    int qty = retrieveMinimumQuantity(vendor, html);
     vendor.put(Constants.Min_Quantity, qty);
     int start = html.indexOf("<p id=\"shipping-statement\">");
     int end = html.indexOf("</p>", start);
@@ -154,8 +154,16 @@ public class CostcoProcessor {
     }
   }
 
-  private static int retrieveMinimumQuantity(Document product) {
-    if (product.get(Constants.Default_Min_Quantity) == null || product.getInteger(Constants.Default_Min_Quantity) <= 0) {
+  private static int retrieveMinimumQuantity(Document product, String html) {
+    int minqty = 1;
+    Matcher m = Pattern.compile("Minimum Order Quantity: [0-9]{1,}").matcher(html);
+    if (m.find()) {
+      m = Pattern.compile("[0-9]{1,}").matcher(m.group());
+      if (m.find()) {
+        minqty = Integer.parseInt(m.group());
+      }
+      return minqty;
+    } else if (product.get(Constants.Default_Min_Quantity) == null || product.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
       return product.getInteger(Constants.Default_Min_Quantity);

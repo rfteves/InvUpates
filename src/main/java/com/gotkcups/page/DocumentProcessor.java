@@ -37,7 +37,9 @@ public class DocumentProcessor extends Thread {
       //System.out.println("Start processing " + vendor.getString(Constants.Sku));
       String key = (String) vendor.get("url");
       String html = null;
-      if (!urls.containsKey(key)) {
+      if (!key.toLowerCase().startsWith("http")) {
+        System.out.println("Undefined url " + vendor.getString(Constants.Sku));
+      } else if (!urls.containsKey(key)) {
         html = fetchPage(key);
         urls.put(key, html);
       } else {
@@ -84,7 +86,7 @@ public class DocumentProcessor extends Thread {
   }
   public final static double MARKUP_TAXABLE = 0.835;
   public final static double MARKUP_NON_TAXABLE = 0.9;
-  public final static double MARKUP_DISCOUNT = 0.05;
+  public final static double MARKUP_DISCOUNT = 0.04;
 
   private static void calculatePrice(Document vendor) {
     if (!vendor.containsKey(Constants.Status)) {
