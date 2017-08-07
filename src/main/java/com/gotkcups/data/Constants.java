@@ -36,11 +36,15 @@ public interface Constants {
     String Compare_At_Price = "compare_at_price";
     String Sku = "sku";
     String Variant = "variant";
+    String Variants = "variants";
+    String Product = "product";
+    String Products = "products";
     String Production = "prod";
     String Title = "title";
     String Namespace = "namespace";
     String Inventory = "inventory";
     String Vendor = "vendor";
+    String Vendors = "vendors";
     String Metafields = "metafields";
     String Product_Id = "product_id";
     String ProductId = "productid";

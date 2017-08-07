@@ -38,16 +38,16 @@ public class TestRequestsHandler {
   private static void loopProducts() throws Exception {
     int limit = 0;
     Map<String, String> params = new HashMap<>();
-    Set<Document> sorted = new TreeSet<>();
     params.put("fields", "id,title,variants");
+    Set<Document> sorted = new TreeSet<>();
     Document resp = Utilities.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
-        if (!(variant.getLong("product_id") == 9760583434l
+        if (!(variant.getLong("product_id") == 10376781898l
           || variant.getLong("product_id") == 93350756417033l)) {
-          //continue;
+          continue;
         }
         if (variant.getLong(Constants.Id) != 35213584842l) {
           //continue;
