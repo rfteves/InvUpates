@@ -27,17 +27,25 @@ public class UpdateProductMetafields {
     params.put("fields", "id,title,variants");
     String json = RestHttpClient.getProduct(Constants.Production, 10376781898l, params);
     Document products = Document.parse(json);
-    Document product = (Document)products.get(Constants.Product);
+    Document product = (Document) products.get(Constants.Product);
     List<Document> variants = (List) product.get(Constants.Variants);
     for (Document variant : variants) {
       Document metafield = Utilities.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      metafield.remove("owner_id");
+      metafield.remove("created_at");
+      metafield.remove("updated_at");
+      metafield.remove("owner_resource");
       String value = metafield.getString("value");
       Document values = Document.parse(value);
-      List<Document>vendors = (List)values.get(Constants.Vendors);
-      for (Document vendor: vendors) {
-        
-        int debug = 0;
-      }
+      List<Document> vendors = (List) values.get(Constants.Vendors);
+      // Only one vendor
+      vendors.get(0).put(Constants.Default_Shipping, 4d);
+      Document m = new Document();
+      metafield.put(Constants.Value, values.toJson());
+      m.put(Constants.Metafield, metafield);
+      String result = RestHttpClient.updateMetafield(Constants.Production, metafield.getLong(Constants.Id), m.toJson());
+      System.out.println(metafield.getLong(Constants.Id));
+      int debug = 0;
     }
   }
 

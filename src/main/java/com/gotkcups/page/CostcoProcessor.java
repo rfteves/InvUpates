@@ -135,8 +135,10 @@ public class CostcoProcessor {
         }
       }
     }
+    // DefaultShipping trumps shipping
     double defaultShipping = retrieveShipping(vendor);
     if (defaultShipping > 0) {
+      defaultShipping = 4d;
       vendor.put(Constants.Shipping, defaultShipping);
     } else if (shipping > 0) {
       vendor.put(Constants.Shipping, shipping);

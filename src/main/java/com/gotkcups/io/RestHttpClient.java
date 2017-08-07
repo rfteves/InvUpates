@@ -329,9 +329,23 @@ public class RestHttpClient {
     return retval;
   }
 
+  public static String updateMetafield(String env, long id, String data) {
+    String retval = null;
+    String url = getMetafieldUrl(env, id, null);
+    retval = processPut(url, data);
+    return retval;
+  }
+
   private static String getVariantUrl(String env, long variantId, Map<String, String> params) {
     StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
     sb.append(String.format("/admin/variants/%d.json", variantId));
+    RestHttpClient.processParams(sb, params);
+    return sb.toString();
+  }
+
+  private static String getMetafieldUrl(String env, long id, Map<String, String> params) {
+    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
+    sb.append(String.format("/admin/metafields/%d.json", id));
     RestHttpClient.processParams(sb, params);
     return sb.toString();
   }

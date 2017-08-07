@@ -169,6 +169,7 @@ public class SamsclubProcessor {
   }
 
   private static double retrieveShipping(Document vendor, String html) {
+    //Shipping trumps defaultShipping
     if (html.contains("<div class=freeDelvryTxt>") || html.contains(">Free shipping</span>")) {
       return 0d;
     } else {

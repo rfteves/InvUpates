@@ -46,8 +46,11 @@ public interface Constants {
     String Vendor = "vendor";
     String Vendors = "vendors";
     String Metafields = "metafields";
+    String Metafield = "metafield";
     String Product_Id = "product_id";
     String ProductId = "productid";
     String Key = "key";
     String Id = "id";
+    String Value_Type = "value_type";
+    String Value = "value";
 }
