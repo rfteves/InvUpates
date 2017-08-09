@@ -240,14 +240,4 @@ public class Utilities {
     }
     return retval;
   }
-
-  public static int normalizeQty(Double price) {
-    int qty = (int) (1500 / price);
-    if (qty < 30) {
-      qty = 30;
-    } else if (qty > 200) {
-      qty = 200;
-    }
-    return qty;
-  }
 }
