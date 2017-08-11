@@ -7,6 +7,7 @@
 package com.gotkcups.io;
 
 import com.gotkcups.data.Constants;
+import com.gotkcups.data.KeurigSelect;
 import static com.gotkcups.data.RequestsHandler.register;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,6 +42,8 @@ import org.bson.Document;
 public class Utilities {
 
   public static void main(String[] s) throws Exception {
+      String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
+      KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
   }
 
   public static String insertSpace(String span) {

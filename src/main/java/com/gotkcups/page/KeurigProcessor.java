@@ -36,6 +36,12 @@ public class KeurigProcessor {
       int start = html.indexOf("<select id=\"package-variant-select\"");
       int end = html.indexOf("</select>", start) + 9;
       String options = html.substring(start, end).replaceAll("[\t\r\n]", " ").replaceAll("[ ]{2,}", " ");
+      while (options.contains("data-content=\"<span ")) {
+          start = options.indexOf(" data-content=\"<span ");
+          end = options.indexOf("</span>\">", 20);
+          options = options.substring(0, start) + options.substring(end + 8);
+          options = options.replaceAll(",", "");
+      }
       KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
       select.getOption().stream().filter(o -> product.getString("sku").startsWith(o.getDataCode().concat("K"))).forEach(o -> {
         if (o.getDataStock().equalsIgnoreCase("inStock") && o.getDataPurchasable().equalsIgnoreCase("true")) {
