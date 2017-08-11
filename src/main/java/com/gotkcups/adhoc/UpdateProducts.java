@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.gotkcups.tests;
+package com.gotkcups.adhoc;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
 import static com.gotkcups.data.RequestsHandler.register;
 import com.gotkcups.io.RestHttpClient;
 import com.gotkcups.io.Utilities;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,19 +23,20 @@ import org.bson.Document;
 
 /**
  *
- * @author rfteves
+ * @author ricardo
  */
-public class TestRequestsHandler {
+public class UpdateProducts {
 
-  public static void main(String[] args) throws Exception {
-    loopProducts();
-    //manualProduct();
-  }
+  /**
+   * @param args the command line arguments
+   */
+  public static void main(String[] args) {
+    // TODO code application logic here
+    String[]names = null;
+    List<String> arrayList = new ArrayList<String>(
+            Arrays.asList(names));
+    
 
-  private static void manualProduct() {
-    String s = "{ \"vendors\" : [{ \"variantid\" : { \"$numberLong\" : \"34766442442\" }, \"productid\" : { \"$numberLong\" : \"9668125130\" }, \"taxable\" : false, \"sku\" : \"1071072C\", \"url\" : \"https://www.costco.com/.product.100292996.html\", \"pageid\" : \"1071072C\" }, { \"variantid\" : { \"$numberLong\" : \"34766442442\" }, \"productid\" : { \"$numberLong\" : \"9668125130\" }, \"taxable\" : false, \"sku\" : \"1071072C\", \"url\" : \"http://www.keurig.com/Beverages/Coffee/Caff%C3%A9-Verona%C2%AE-Coffee/p/Caffe-Verona-Coffee-Starbucks\", \"defaultminqty\" : 6, \"pageid\" : \"5000054318K\" }, { \"variantid\" : { \"$numberLong\" : \"34766442442\" }, \"productid\" : { \"$numberLong\" : \"9668125130\" }, \"taxable\" : false, \"sku\" : \"1071072C\", \"url\" : \"http://www.keurig.com/Beverages/Coffee/Caff%C3%A9-Verona%C2%AE-Coffee/p/Caffe-Verona-Coffee-Starbucks\", \"defaultminqty\" : 9, \"pageid\" : \"5000054255K\" }] }";
-    Document vendors = Document.parse(s);
-    register(vendors);
   }
 
   private static void loopProducts() throws Exception {
@@ -72,30 +75,10 @@ public class TestRequestsHandler {
         Document values = Document.parse(value);
         variant.put("results", values);
         register(values);
-        System.out.println(++ordinal + " of " + sorted.size());
       }
-    }
-    if (false) {
-      for (Document variant : sorted) {
-        if (!variant.containsKey("results")) {
-          System.out.println("No vendors " + variant.getString(Constants.Title));
-          continue;
-        }
-        Document results = (Document) variant.get("results");
-        List<Document> vendors = (List) results.get("vendors");
-        for (Document vendor : vendors) {
-          waitForStatus(vendor);
-          if (!vendor.get(Constants.Status).equals(Constants.Page_Not_Available)) {
-            continue;
-          }
-          System.out.println(vendor.get(Constants.ProductId) + "." + vendor.getLong(Constants.Id) + "." + vendor.getString(Constants.Sku));
-        }
-      }
-      System.exit(0);
     }
     for (Document variant : sorted) {
       if (!variant.containsKey("results")) {
-        System.out.println("No vendors " + variant.getString(Constants.Title));
         continue;
       }
       Document results = (Document) variant.get("results");
@@ -104,9 +87,6 @@ public class TestRequestsHandler {
       String currentStatus = variant.getInteger(Constants.Inventory_Quantity) > 0 ? Constants.In_Stock : Constants.Out_Of_Stock;
       Double price = null;
       Double currentPrice = Double.valueOf(variant.getString(Constants.Price));
-      if (variant.getString(Constants.Sku).equals("5000055775KK")) {
-        //System.out.println();
-      }
       for (Document vendor : vendors) {
         waitForStatus(vendor);
         if (vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
@@ -146,8 +126,6 @@ public class TestRequestsHandler {
           if (variant.getInteger(Constants.Inventory_Quantity) < 100 || variant.getInteger(Constants.Inventory_Quantity) > qty) {
             message.append(variant.getString(Constants.Sku) + " change qty");
           }
-        } else {
-          //System.out.println(d.getString(Constants.Sku) + " same: " + currentPrice + " outOfStock");
         }
       }
       if (message.toString().contains("change")) {
@@ -180,7 +158,7 @@ public class TestRequestsHandler {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ex) {
-          Logger.getLogger(TestRequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
+          Logger.getLogger(UpdateProducts.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("waiting status " + vendor.getString(Constants.Sku));
       } else {
@@ -190,6 +168,5 @@ public class TestRequestsHandler {
   }
 
   private final static double MAX_PURCHASE = 5000;
-
   private static StringBuilder message = new StringBuilder();
 }
