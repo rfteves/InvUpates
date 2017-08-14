@@ -8,6 +8,7 @@ package com.gotkcups.tests;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
 import static com.gotkcups.data.RequestsHandler.register;
+import com.gotkcups.io.GateWay;
 import com.gotkcups.io.RestHttpClient;
 import com.gotkcups.io.Utilities;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class TestRequestsHandler {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = Utilities.getAllProducts("prod", params, 50, -1);
+    Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       List<Document> variants = (List) product.get("variants");
@@ -66,7 +67,7 @@ public class TestRequestsHandler {
     }
     int ordinal = 0;
     for (Document variant : sorted) {
-      Document metafield = Utilities.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
@@ -166,7 +167,7 @@ public class TestRequestsHandler {
         message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
-        RestHttpClient.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
         Thread.sleep(1000);
       } else {
         System.out.println(message.toString());

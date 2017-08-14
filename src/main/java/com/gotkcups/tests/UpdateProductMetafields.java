@@ -6,8 +6,7 @@
 package com.gotkcups.tests;
 
 import com.gotkcups.data.Constants;
-import com.gotkcups.io.RestHttpClient;
-import com.gotkcups.io.Utilities;
+import com.gotkcups.io.GateWay;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +24,12 @@ public class UpdateProductMetafields {
   public static void main(String[] args) {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
-    String json = RestHttpClient.getProduct(Constants.Production, 10376781898l, params);
+    String json = GateWay.getProduct(Constants.Production, 10376781898l, params);
     Document products = Document.parse(json);
     Document product = (Document) products.get(Constants.Product);
     List<Document> variants = (List) product.get(Constants.Variants);
     for (Document variant : variants) {
-      Document metafield = Utilities.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
       metafield.remove("owner_id");
       metafield.remove("created_at");
       metafield.remove("updated_at");
@@ -43,7 +42,7 @@ public class UpdateProductMetafields {
       Document m = new Document();
       metafield.put(Constants.Value, values.toJson());
       m.put(Constants.Metafield, metafield);
-      String result = RestHttpClient.updateMetafield(Constants.Production, metafield.getLong(Constants.Id), m.toJson());
+      String result = GateWay.updateMetafield(Constants.Production, metafield.getLong(Constants.Id), m.toJson());
       System.out.println(metafield.getLong(Constants.Id));
       int debug = 0;
     }

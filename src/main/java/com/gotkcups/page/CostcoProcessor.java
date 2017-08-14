@@ -82,6 +82,9 @@ public class CostcoProcessor {
         if (!product.getString("inventory").equalsIgnoreCase("IN_STOCK")) {
             vendor.put(Constants.Status, Constants.Out_Of_Stock);
             return;
+        } else if (Double.parseDouble(product.getString("ordinal")) <= 20) {
+            vendor.put(Constants.Status, Constants.Out_Of_Stock);
+            return;
         }
         vendor.put(Constants.Status, Constants.In_Stock);
         if (product.getString("listPrice") != null) {

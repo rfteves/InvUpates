@@ -5,12 +5,7 @@
  */
 package com.gotkcups.io;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import java.util.Scanner;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -22,18 +17,16 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+
 /**
  *
  * @author ricardo
  */
 public class RestHttpClient {
 
-  private static Map<String, String> KEYS = new HashMap<String, String>();
+  
 
-  static {
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
-    RestHttpClient.initKeys();
-  }
+  
 
   public static String processGetHtml(String url) {
     Scanner in = null;
@@ -169,7 +162,7 @@ public class RestHttpClient {
     }
   }
 
-  private static void processDelete(String url) {
+  public static void processDelete(String url) {
     Scanner in = null;
     try {
       StringBuilder sb = new StringBuilder();
@@ -193,160 +186,5 @@ public class RestHttpClient {
         in.close();
       }
     }
-  }
-
-  public static String getProductVariant(String env, String variant_id) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append(String.format("/admin/variants/%s.json", variant_id));
-    return RestHttpClient.processGet(sb.toString());
-  }
-
-  public static String getCollects(String env) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append("/admin/collects.json");
-    return RestHttpClient.processGet(sb.toString());
-  }
-
-  public static String getProducts(String env, Map<String, String> params) {
-    StringBuilder url = new StringBuilder(RestHttpClient.getKeyPass(env));
-    if (params != null && params.containsKey("id")) {
-      url.append(String.format("/admin/products/%s.json", params.remove("id").toString()));
-    } else {
-      url.append(String.format("/admin/products.json"));
-    }
-    RestHttpClient.processParams(url, params);
-    return RestHttpClient.processGet(url.toString());
-  }
-
-  private static void processParams(StringBuilder url, Map<String, String> params) {
-    if (params != null && params.size() > 0) {
-      url.append("?");
-      boolean andit = false;
-      for (String key : params.keySet()) {
-        if (andit) {
-          url.append("&");
-        }
-        andit = true;
-        url.append(key);
-        url.append("=");
-        url.append(params.get(key));
-      }
-    }
-  }
-
-  public static String createVariantMetaField(String env, long productId, long variantId, String jsondata) {
-    StringBuilder url = new StringBuilder(RestHttpClient.getKeyPass(env));
-    url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
-    return RestHttpClient.processPost(url.toString(), jsondata);
-  }
-
-  public static String getVariantMetaField(String env, long productId, long variantId) {
-    StringBuilder url = new StringBuilder(RestHttpClient.getKeyPass(env));
-    url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
-    return RestHttpClient.processGet(url.toString());
-  }
-
-  public static String createProduct(String env, String json) {
-    StringBuilder url = new StringBuilder(RestHttpClient.getKeyPass(env));
-    url.append(String.format("/admin/products.json", ""));
-    return RestHttpClient.processPost(url.toString(), json);
-  }
-
-  public static void deleteMetaField(String env, long productId, long metaid) {
-    StringBuilder url = new StringBuilder(RestHttpClient.getKeyPass(env));
-    url.append(String.format("/admin/products/%d/metafields/%d.json", productId, metaid));
-    RestHttpClient.processDelete(url.toString());
-  }
-
-  public static String getCollects(String env, int limit, int page, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    StringBuilder url = new StringBuilder(String.format("/admin/custom_collections.json?limit=%d&page=%d&", limit, page));
-    RestHttpClient.processParams(url, params);
-    sb.append(url);
-    return RestHttpClient.processGet(sb.toString());
-  }
-
-  private static String getProductUrl(String env, long productId, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append(String.format("/admin/products/%d.json", productId));
-    RestHttpClient.processParams(sb, params);
-    return sb.toString();
-  }
-
-  public static String updateProduct(String env, long productId, String data) {
-    String retval = null;
-    String url = getProductUrl(env, productId, null);
-    retval = processPut(url, data);
-    return retval;
-  }
-
-  public static String getProduct(String env, long productId, Map<String, String> params) {
-    String url = getProductUrl(env, productId, params);
-    String so = RestHttpClient.processGet(url);
-    return so;
-  }
-
-  public static void initProductionKeys() {
-    KEYS.put("prod", Utilities.getApplicationProperty("https.key"));
-  }
-
-  private static void initKeys() {
-    StringBuilder sb = new StringBuilder("https://");
-    sb.append(Utilities.getApplicationProperty("key.prod"));
-    sb.append(":");
-    sb.append(Utilities.getApplicationProperty("password.prod"));
-    sb.append("@");
-    sb.append(Utilities.getApplicationProperty("store.prod"));
-    sb.append(".myshopify.com");
-    KEYS.put("prod", sb.toString());
-    sb = new StringBuilder("https://");
-    sb.append(Utilities.getApplicationProperty("key.dev"));
-    sb.append(":");
-    sb.append(Utilities.getApplicationProperty("password.dev"));
-    sb.append("@");
-    sb.append(Utilities.getApplicationProperty("store.dev"));
-    sb.append(".myshopify.com");
-    KEYS.put("dev", sb.toString());
-  }
-
-  private static String getKeyPass(String env) {
-    return KEYS.get(env);
-  }
-
-  public static void main(String[] args) throws Exception {
-  }
-
-  public static String getProductMetafields(String env, long productId) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append(String.format("/admin/products/%d/metafields.json", productId));
-    return RestHttpClient.processGet(sb.toString());
-  }
-
-  public static String updateVariant(String env, long variantId, String data) {
-    String retval = null;
-    String url = getVariantUrl(env, variantId, null);
-    retval = processPut(url, data);
-    return retval;
-  }
-
-  public static String updateMetafield(String env, long id, String data) {
-    String retval = null;
-    String url = getMetafieldUrl(env, id, null);
-    retval = processPut(url, data);
-    return retval;
-  }
-
-  private static String getVariantUrl(String env, long variantId, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append(String.format("/admin/variants/%d.json", variantId));
-    RestHttpClient.processParams(sb, params);
-    return sb.toString();
-  }
-
-  private static String getMetafieldUrl(String env, long id, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(RestHttpClient.getKeyPass(env));
-    sb.append(String.format("/admin/metafields/%d.json", id));
-    RestHttpClient.processParams(sb, params);
-    return sb.toString();
   }
 }

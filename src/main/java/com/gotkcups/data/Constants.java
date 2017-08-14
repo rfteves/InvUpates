@@ -51,6 +51,14 @@ public interface Constants {
     String ProductId = "productid";
     String Key = "key";
     String Id = "id";
+    String _Id = "_id";
     String Value_Type = "value_type";
     String Value = "value";
+    
+    String Remote_Host = "remoteHost";
+    String Last_Update = "lastUpdate";
+    String Table_GotKcups = "gotkcups";
+    String Collection_Product_IP = "productip";
+    String Collection_IP = "ipcount";
+    String Visits = "visits";
 }

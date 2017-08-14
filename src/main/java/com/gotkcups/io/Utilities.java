@@ -6,24 +6,15 @@
  */
 package com.gotkcups.io;
 
-import com.gotkcups.data.Constants;
 import com.gotkcups.data.KeurigSelect;
-import static com.gotkcups.data.RequestsHandler.register;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +24,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.bson.Document;
 
 /**
  *
@@ -42,8 +32,8 @@ import org.bson.Document;
 public class Utilities {
 
   public static void main(String[] s) throws Exception {
-      String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
-      KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
+    String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
+    KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
   }
 
   public static String insertSpace(String span) {
@@ -89,6 +79,8 @@ public class Utilities {
     }
   }
 
+  static boolean shown = false;
+
   public static String getApplicationProperty(String name) {
     File propertiesFile = new File("./application.properties");
     String userFile = propertiesFile.toURI().toString();
@@ -96,6 +88,10 @@ public class Utilities {
     Properties props = new Properties();
     String value = null;
     try {
+      if (!shown) {
+        shown = true;
+        System.out.println(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
+      }
       url = new URL(userFile);
       props.load(url.openStream());
       value = props.getProperty(name);
@@ -190,57 +186,5 @@ public class Utilities {
       }
     }
     return value;
-  }
-
-  public static Document getAllProducts(String env, Map<String, String> params) throws IOException {
-    return getAllProducts(env, params, 50, -1);
-  }
-
-  public static Document getAllProducts(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
-    final Document[] object = new Document[1];
-    Document next = null;
-    int page = 0;
-    params.put("limit", "" + pageLimit);
-    int pageMax = pageLimit;
-    while (pageLimit == pageMax) {
-      params.put("page", ++page + "");
-      String take = RestHttpClient.getProducts(env, params);
-      Document tempdoc = Document.parse(take);
-      if (object[0] == null) {
-        object[0] = tempdoc;
-      } else {
-        next = tempdoc;
-        List<Document> docs = (List) next.get("products");
-        docs.stream().forEach(((List) object[0].get("products"))::add);
-      }
-      pageLimit = ((List) tempdoc.get("products")).size();
-      if (bookLimit < 0) {
-        continue;
-      } else if (((List) object[0].get("products")).size() >= bookLimit) {
-        break;
-      }
-      //if (true)break;
-    }
-    return object[0];
-  }
-
-  public static String getVariantMetaField(String env, long productId, long variantId) {
-    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
-    url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
-    return RestHttpClient.processGet(url.toString());
-  }
-
-  public static Document getMetafield(String env, Document variant, String namespace, String key) {
-    String meta = RestHttpClient.getVariantMetaField(env, variant.getLong(Constants.Product_Id), variant.getLong(Constants.Id));
-    Document metas = Document.parse(meta);
-    List<Document> metafields = (List) metas.get(Constants.Metafields);
-    Document retval = null;
-    for (Document metafield : metafields) {
-      if (metafield.getString(Constants.Namespace).equals(namespace) && metafield.getString(Constants.Key).equals(key)) {
-        retval = metafield;
-        break;
-      }
-    }
-    return retval;
   }
 }

@@ -1,4 +1,5 @@
 <configuration>
-    <logger name="org.apache" level="DEBUG" />
-    <logger name="httpclient" level="DEBUG" /> 
+    <logger name="org.apache" level="SEVERE" />
+    <logger name="httpclient" level="SEVERE" /> 
+    <logger name="com.gotkcups" level="DEBUG" /> 
 </configuration>

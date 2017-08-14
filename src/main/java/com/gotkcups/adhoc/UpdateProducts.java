@@ -8,6 +8,7 @@ package com.gotkcups.adhoc;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
 import static com.gotkcups.data.RequestsHandler.register;
+import com.gotkcups.io.GateWay;
 import com.gotkcups.io.RestHttpClient;
 import com.gotkcups.io.Utilities;
 import java.util.ArrayList;
@@ -30,13 +31,8 @@ public class UpdateProducts {
   /**
    * @param args the command line arguments
    */
-  public static void main(String[] args) {
-    // TODO code application logic here
-    String[]names = null;
-    List<String> arrayList = new ArrayList<String>(
-            Arrays.asList(names));
-    
-
+  public static void main(String[] args) throws Exception {
+    loopProducts();
   }
 
   private static void loopProducts() throws Exception {
@@ -44,20 +40,20 @@ public class UpdateProducts {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = Utilities.getAllProducts("prod", params, 50, -1);
+    Document resp = GateWay.getAllProducts("prod", params, 50, 1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
         if (!(variant.getLong("product_id") == 6945798279l
-                || variant.getLong("product_id") == 93350756417033l)) {
+          || variant.getLong("product_id") == 93350756417033l)) {
           //continue;
         }
         if (variant.getLong(Constants.Id) != 35213584842l) {
           //continue;
         }
         if (!variant.getString(Constants.Sku).toLowerCase().endsWith("k")) {
-          //continue;
+          continue;
         }
         if (limit++ > 200) {
           //break;
@@ -69,7 +65,7 @@ public class UpdateProducts {
     }
     int ordinal = 0;
     for (Document variant : sorted) {
-      Document metafield = Utilities.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
@@ -101,19 +97,21 @@ public class UpdateProducts {
       message.setLength(0);
       int qty = 0;
       if (status.equals(Constants.In_Stock) && currentStatus.equals(status)) {
-        qty = (int) (MAX_PURCHASE / price);
         if (price.doubleValue() != currentPrice) {
           message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price);
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < 100 || variant.getInteger(Constants.Inventory_Quantity) > qty) {
+        } else if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
+          || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
+          qty = MAX_QUANTITY;
           message.append(variant.getString(Constants.Sku) + " change qty");
         } else {
           message.append(variant.getString(Constants.Sku) + " same: " + currentPrice);
         }
       } else if (status.equals(Constants.In_Stock)) {
-        qty = (int) (MAX_PURCHASE / price);
         if (price.doubleValue() != currentPrice) {
           message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price + " change inStock");
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < 100 || variant.getInteger(Constants.Inventory_Quantity) > qty) {
+        } else if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
+          || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
+          qty = MAX_QUANTITY;
           message.append(variant.getString(Constants.Sku) + " change inStock");
         } else {
           message.append(variant.getString(Constants.Sku) + " same: " + currentPrice + " inStock");
@@ -122,8 +120,10 @@ public class UpdateProducts {
         message.append(variant.getString(Constants.Sku) + " change outOfStock");
       } else {
         if (status.equals(Constants.In_Stock)) {
-          qty = (int) (MAX_PURCHASE / price);
-          if (variant.getInteger(Constants.Inventory_Quantity) < 100 || variant.getInteger(Constants.Inventory_Quantity) > qty) {
+          qty = MAX_QUANTITY;
+          if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
+            || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
+            qty = MAX_QUANTITY;
             message.append(variant.getString(Constants.Sku) + " change qty");
           }
         }
@@ -144,10 +144,10 @@ public class UpdateProducts {
         message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
-        RestHttpClient.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
         Thread.sleep(1000);
       } else {
-        System.out.println(message.toString());
+        //System.out.println(message.toString());
       }
     }
   }
@@ -166,7 +166,7 @@ public class UpdateProducts {
       }
     }
   }
-
-  private final static double MAX_PURCHASE = 5000;
+  private final static int MIN_QUANTITY = 100;
+  private final static int MAX_QUANTITY = 100;
   private static StringBuilder message = new StringBuilder();
 }

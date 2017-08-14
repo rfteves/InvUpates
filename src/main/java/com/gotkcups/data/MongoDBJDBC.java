@@ -5,6 +5,29 @@
  */
 package com.gotkcups.data;
 
+import com.gotkcups.io.Utilities;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.PushOptions;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import org.bson.BsonDateTime;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
 
 /*import com.gotkcups.io.Utilities;
 import com.mongodb.MongoClient;
@@ -23,7 +46,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.bson.Document;
 import org.bson.conversions.Bson;*/
-
 /**
  *
  * @author rfteves
@@ -94,8 +116,7 @@ public class MongoDBJDBC {
   public static void dropCollection(String name) {
     MongoDatabase database = getDatabase("gotkcups");
     database.getCollection(name).drop();
-  }
-
+  }*/
   static Map<String, MongoDatabase> DATABASES = new HashMap<>();
 
   public static MongoDatabase getDatabase(String name) {
@@ -105,7 +126,7 @@ public class MongoDBJDBC {
       MongoCredential credential = MongoCredential.createCredential(Utilities.getApplicationProperty("mongodb.user"), "admin", Utilities.getApplicationProperty("mongodb.password").toCharArray());
       MongoClientOptions options = MongoClientOptions.builder().sslEnabled(false).build();
       MongoClient client = new MongoClient(new ServerAddress("teves.us", 27017),
-              Arrays.asList(credential), options);
+        Arrays.asList(credential), options);
       synchronized (DATABASES) {
         if (!DATABASES.containsKey(name)) {
           database = client.getDatabase(name);
@@ -118,5 +139,23 @@ public class MongoDBJDBC {
       database = DATABASES.get(name);
     }
     return database;
-  }*/
+  }
+
+  public static UpdateResult updateProductIP(Document product) {
+    UpdateResult result = null;
+    try {
+      MongoDatabase database = getDatabase(Constants.Table_GotKcups);
+      MongoCollection<Document> products = database.getCollection(Constants.Collection_Product_IP);
+      Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
+      BsonDateTime laUsaTimeNow = new BsonDateTime(now.getTimeInMillis());
+      result = products.updateOne(Filters.eq(Constants._Id, product.get(Constants._Id)),
+        Updates.combine(Updates.inc(Constants.Visits, 1),
+          Updates.pushEach(Constants.Last_Update, Arrays.asList(laUsaTimeNow), new PushOptions().slice(10))),
+        new UpdateOptions().upsert(true));
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    } finally {
+      return result;
+    }
+  }
 }
