@@ -40,7 +40,7 @@ public class UpdateProducts {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = GateWay.getAllProducts("prod", params, 50, 1);
+    Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       List<Document> variants = (List) product.get("variants");
@@ -53,7 +53,7 @@ public class UpdateProducts {
           //continue;
         }
         if (!variant.getString(Constants.Sku).toLowerCase().endsWith("k")) {
-          continue;
+          //continue;
         }
         if (limit++ > 200) {
           //break;
@@ -95,13 +95,17 @@ public class UpdateProducts {
         }
       }
       message.setLength(0);
-      int qty = 0;
+      int minQty = 0, maxQty = 0, qty = 0;
+      if (status.equals(Constants.In_Stock)) {
+          minQty = (int) (MIN_PURCHASE / price);
+          maxQty = Math.min((int) (MAX_PURCHASE / price), 150);
+      }
       if (status.equals(Constants.In_Stock) && currentStatus.equals(status)) {
         if (price.doubleValue() != currentPrice) {
           message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price);
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
-          || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
-          qty = MAX_QUANTITY;
+        } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+          || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+          qty = maxQty;
           message.append(variant.getString(Constants.Sku) + " change qty");
         } else {
           message.append(variant.getString(Constants.Sku) + " same: " + currentPrice);
@@ -109,9 +113,9 @@ public class UpdateProducts {
       } else if (status.equals(Constants.In_Stock)) {
         if (price.doubleValue() != currentPrice) {
           message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price + " change inStock");
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
-          || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
-          qty = MAX_QUANTITY;
+        } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+          || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+          qty = maxQty;
           message.append(variant.getString(Constants.Sku) + " change inStock");
         } else {
           message.append(variant.getString(Constants.Sku) + " same: " + currentPrice + " inStock");
@@ -120,10 +124,9 @@ public class UpdateProducts {
         message.append(variant.getString(Constants.Sku) + " change outOfStock");
       } else {
         if (status.equals(Constants.In_Stock)) {
-          qty = MAX_QUANTITY;
-          if (variant.getInteger(Constants.Inventory_Quantity) < MIN_QUANTITY
-            || variant.getInteger(Constants.Inventory_Quantity) > MAX_QUANTITY) {
-            qty = MAX_QUANTITY;
+          if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+            || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+            qty = maxQty;
             message.append(variant.getString(Constants.Sku) + " change qty");
           }
         }
@@ -166,7 +169,7 @@ public class UpdateProducts {
       }
     }
   }
-  private final static int MIN_QUANTITY = 100;
-  private final static int MAX_QUANTITY = 100;
+  private final static int MIN_PURCHASE = 6500;
+  private final static int MAX_PURCHASE = 11500;
   private static StringBuilder message = new StringBuilder();
 }
