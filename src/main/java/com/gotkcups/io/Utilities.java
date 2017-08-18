@@ -88,9 +88,19 @@ public class Utilities {
     Properties props = new Properties();
     String value = null;
     try {
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+    System.out.println(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
+      System.out.println("**************************************************************");
       if (!shown) {
         shown = true;
-        System.out.println(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
       }
       url = new URL(userFile);
       props.load(url.openStream());

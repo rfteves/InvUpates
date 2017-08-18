@@ -13,6 +13,7 @@ public interface Constants {
     String Status = "Status";
     String Shipping = "Shipping";
     String Default_Shipping = "defaultshipping";
+    String DefaultShipping = "defaultshipping";
     String Min_Quantity = "minqty";
     String Default_Min_Quantity = "defaultminqty";
     String Page_Not_Available = "Page not available.";
@@ -61,4 +62,7 @@ public interface Constants {
     String Collection_Product_IP = "productip";
     String Collection_IP = "ipcount";
     String Visits = "visits";
+    String URL = "url";
+    String Variantid = "variantid";
+    String Pageid = "pageid";
 }

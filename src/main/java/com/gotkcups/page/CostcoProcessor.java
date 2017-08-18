@@ -37,25 +37,7 @@ public class CostcoProcessor {
             vendor.put(Constants.Status, Constants.Product_Not_Found);
             return;
         }
-        if (html.contains("var products = ")) {
-            int start = html.indexOf("var products = ") + 15;
-            int end = html.indexOf("];", start) + 1;
-            StringBuilder products = new StringBuilder(html.substring(start, end).replaceAll("[\n\r\t]", "").replaceAll("[ ]{2,}", " "));
-            products.insert(0, "{\"products\":");
-            products.append("}");
-            vendor.put(Constants.Costco_Products, Document.parse(products.toString()));
-        } else {
-            vendor.put(Constants.Status, Constants.Product_Not_Found);
-            return;
-        }
-        if (html.contains("var options = ")) {
-            int start = html.indexOf("var options = ") + 14;
-            int end = html.indexOf("];", start) + 1;
-            StringBuilder options = new StringBuilder(html.substring(start, end).replaceAll("[\n\r\t]", "").replaceAll("[ ]{2,}", " "));
-            options.insert(0, "{\"options\":");
-            options.append("}");
-            vendor.put(Constants.Costco_Options, Document.parse(options.toString()));
-        }
+        initProductOptions(vendor, html);
         String s = (String) vendor.get("sku");
         String sku = s.substring(0, s.length() - 1);
         Document products = (Document) vendor.get(Constants.Costco_Products);
@@ -167,6 +149,28 @@ public class CostcoProcessor {
             return 1;
         } else {
             return product.getInteger(Constants.Default_Min_Quantity);
+        }
+    }
+    
+    public static void initProductOptions(Document vendor, String html) {
+        if (html.contains("var products = ")) {
+            int start = html.indexOf("var products = ") + 15;
+            int end = html.indexOf("];", start) + 1;
+            StringBuilder products = new StringBuilder(html.substring(start, end).replaceAll("[\n\r\t]", "").replaceAll("[ ]{2,}", " "));
+            products.insert(0, "{\"products\":");
+            products.append("}");
+            vendor.put(Constants.Costco_Products, Document.parse(products.toString()));
+        } else {
+            vendor.put(Constants.Status, Constants.Product_Not_Found);
+            return;
+        }
+        if (html.contains("var options = ")) {
+            int start = html.indexOf("var options = ") + 14;
+            int end = html.indexOf("];", start) + 1;
+            StringBuilder options = new StringBuilder(html.substring(start, end).replaceAll("[\n\r\t]", "").replaceAll("[ ]{2,}", " "));
+            options.insert(0, "{\"options\":");
+            options.append("}");
+            vendor.put(Constants.Costco_Options, Document.parse(options.toString()));
         }
     }
 
