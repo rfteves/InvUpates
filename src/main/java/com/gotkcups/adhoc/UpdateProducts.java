@@ -45,7 +45,7 @@ public class UpdateProducts {
         for (Document product : products) {
             List<Document> variants = (List) product.get("variants");
             for (Document variant : variants) {
-                if (!(variant.getLong("product_id") == 11850126410L
+                if (!(variant.getLong("product_id") == 11851462218L
                   || variant.getLong("product_id") == 93350756417033l)) {
                     continue;
                 }

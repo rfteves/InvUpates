@@ -68,6 +68,7 @@ public class CostcoProcessor {
             vendor.put(Constants.Status, Constants.Out_Of_Stock);
             return;
         }
+        vendor.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
         vendor.put(Constants.Status, Constants.In_Stock);
         if (product.getString("listPrice") != null) {
             String str = product.getString("listPrice");

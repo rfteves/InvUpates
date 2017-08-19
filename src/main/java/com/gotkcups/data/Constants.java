@@ -65,4 +65,5 @@ public interface Constants {
     String URL = "url";
     String Variantid = "variantid";
     String Pageid = "pageid";
+    String OrdinalCount = "ordinal";
 }
