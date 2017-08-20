@@ -6,8 +6,8 @@
 package com.gotkcups.io;
 
 import com.gotkcups.data.Constants;
+import com.gotkcups.data.MongoDBJDBC;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bson.Document;
@@ -20,6 +20,10 @@ public abstract class GateWay {
 
   public static Document getAllProducts(String env, Map<String, String> params) throws IOException {
     return getAllProducts(env, params, 50, -1);
+  }
+  
+  public static void init() {
+    
   }
 
   public static Document getAllProducts(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
@@ -51,19 +55,19 @@ public abstract class GateWay {
   }
 
   public static String getProductVariant(String env, String variant_id) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append(String.format("/admin/variants/%s.json", variant_id));
     return RestHttpClient.processGet(sb.toString());
   }
 
   public static String getCollects(String env) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append("/admin/collects.json");
     return RestHttpClient.processGet(sb.toString());
   }
 
   public static String getProducts(String env, Map<String, String> params) {
-    StringBuilder url = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     if (params != null && params.containsKey("id")) {
       url.append(String.format("/admin/products/%s.json", params.remove("id").toString()));
     } else {
@@ -90,31 +94,37 @@ public abstract class GateWay {
   }
 
   public static String createVariantMetaField(String env, long productId, long variantId, String jsondata) {
-    StringBuilder url = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
     return RestHttpClient.processPost(url.toString(), jsondata);
   }
 
   public static String getVariantMetaField(String env, long productId, long variantId) {
-    StringBuilder url = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
     return RestHttpClient.processGet(url.toString());
   }
 
   public static String createProduct(String env, String json) {
-    StringBuilder url = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products.json", ""));
     return RestHttpClient.processPost(url.toString(), json);
   }
 
+  public static String createProductVariant(String env, long productId, String jsondata) {
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    url.append(String.format("/admin/products/%s/variants.json", productId));
+    return RestHttpClient.processPost(url.toString(), jsondata);
+  }
+
   public static void deleteMetaField(String env, long productId, long metaid) {
-    StringBuilder url = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products/%d/metafields/%d.json", productId, metaid));
     RestHttpClient.processDelete(url.toString());
   }
 
   public static String getCollects(String env, int limit, int page, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     StringBuilder url = new StringBuilder(String.format("/admin/custom_collections.json?limit=%d&page=%d&", limit, page));
     GateWay.processParams(url, params);
     sb.append(url);
@@ -122,7 +132,7 @@ public abstract class GateWay {
   }
 
   private static String getProductUrl(String env, long productId, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append(String.format("/admin/products/%d.json", productId));
     GateWay.processParams(sb, params);
     return sb.toString();
@@ -140,45 +150,22 @@ public abstract class GateWay {
     String so = RestHttpClient.processGet(url);
     return so;
   }
-  private static Map<String, String> KEYS = new HashMap<String, String>();
-
-  static {
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
-    GateWay.initKeys();
-  }
-
-  public static void initProductionKeys() {
-    KEYS.put("prod", Utilities.getApplicationProperty("https.key"));
-  }
-
-  private static void initKeys() {
-    StringBuilder sb = new StringBuilder("https://");
-    sb.append(Utilities.getApplicationProperty("key.prod"));
-    sb.append(":");
-    sb.append(Utilities.getApplicationProperty("password.prod"));
-    sb.append("@");
-    sb.append(Utilities.getApplicationProperty("store.prod"));
-    sb.append(".myshopify.com");
-    KEYS.put("prod", sb.toString());
-    sb = new StringBuilder("https://");
-    sb.append(Utilities.getApplicationProperty("key.dev"));
-    sb.append(":");
-    sb.append(Utilities.getApplicationProperty("password.dev"));
-    sb.append("@");
-    sb.append(Utilities.getApplicationProperty("store.dev"));
-    sb.append(".myshopify.com");
-    KEYS.put("dev", sb.toString());
-  }
-
-  private static String getKeyPass(String env) {
-    return KEYS.get(env);
-  }
 
   public static void main(String[] args) throws Exception {
+    /*Long id = 10376781898l;
+    Document product = new Document();
+    Document _id = new Document();
+    _id.put(Constants.Product_Id, id);
+    _id.put(Constants.Remote_Host, "localhost");
+    product.put(Constants._Id, _id);
+    MongoDBJDBC.updateProductIP(product);
+    RequestsHandler.register(id);*/
+    Document id = new Document(Constants._Id, 8199345863L);
+    MongoDBJDBC.getProductLastUpdate(id);
   }
 
   public static String getProductMetafields(String env, long productId) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append(String.format("/admin/products/%d/metafields.json", productId));
     return RestHttpClient.processGet(sb.toString());
   }
@@ -198,20 +185,21 @@ public abstract class GateWay {
   }
 
   private static String getVariantUrl(String env, long variantId, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append(String.format("/admin/variants/%d.json", variantId));
     GateWay.processParams(sb, params);
     return sb.toString();
   }
 
   private static String getMetafieldUrl(String env, long id, Map<String, String> params) {
-    StringBuilder sb = new StringBuilder(GateWay.getKeyPass(env));
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
     sb.append(String.format("/admin/metafields/%d.json", id));
     GateWay.processParams(sb, params);
     return sb.toString();
   }
 
   public static String getProduct(String env, long productId) {
+    GateWay.init();
     StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products/%s.json", productId));
     return RestHttpClient.processGet(url.toString());

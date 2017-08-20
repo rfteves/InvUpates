@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
 
 /**
@@ -23,16 +25,16 @@ import org.bson.Document;
 public class DocumentProcessor extends Thread {
 
   private static boolean processing;
+  private final static Log log = LogFactory.getLog(DocumentProcessor.class);
 
-  public static void accept(Document vendors) {
+  public static void accept(Map<String, String> urls, Document vendors) {
     processing = true;
-    process(vendors);
+    process(urls, vendors);
     processing = false;
   }
 
-  private static void process(Document vendors) {
+  private static void process(Map<String, String> urls, Document vendors) {
     List<Document> obj = (List) vendors.get("vendors");
-    Map<String, String> urls = new HashMap<>();
     obj.stream().forEach(vendor -> {
       //System.out.println("Start processing " + vendor.getString(Constants.Sku));
       String key = (String) vendor.get("url");
@@ -45,6 +47,7 @@ public class DocumentProcessor extends Thread {
       } else {
         html = urls.get(key);
       }
+      log.debug(String.format("DocProcessing %s %s", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
       if (html == null || html.startsWith("Severe Error")) {
         vendor.put(Constants.Status, Constants.Page_Not_Available);
       } else {

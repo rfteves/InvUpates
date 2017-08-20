@@ -58,8 +58,10 @@ public interface Constants {
     
     String Remote_Host = "remoteHost";
     String Last_Update = "lastUpdate";
+    String Changes = "Changes";
     String Table_GotKcups = "gotkcups";
     String Collection_Product_IP = "productip";
+    String Collection_Variant_IP = "variantip";
     String Collection_IP = "ipcount";
     String Visits = "visits";
     String URL = "url";

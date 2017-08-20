@@ -10,23 +10,29 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Accumulators.max;
+import static com.mongodb.client.model.Aggregates.group;
+import static com.mongodb.client.model.Aggregates.match;
+import static com.mongodb.client.model.Aggregates.unwind;
+import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.PushOptions;
 import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.inc;
+import static com.mongodb.client.model.Updates.pushEach;
 import com.mongodb.client.result.UpdateResult;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import org.bson.BsonDateTime;
 import org.bson.Document;
-import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /*import com.gotkcups.io.Utilities;
@@ -117,6 +123,7 @@ public class MongoDBJDBC {
     MongoDatabase database = getDatabase("gotkcups");
     database.getCollection(name).drop();
   }*/
+  private final static Logger log = LoggerFactory.getLogger(MongoDBJDBC.class);
   static Map<String, MongoDatabase> DATABASES = new HashMap<>();
 
   public static MongoDatabase getDatabase(String name) {
@@ -142,19 +149,57 @@ public class MongoDBJDBC {
   }
 
   public static UpdateResult updateProductIP(Document product) {
+    log.debug("Updating product id " + product.get(Constants._Id));
     UpdateResult result = null;
     try {
       MongoDatabase database = getDatabase(Constants.Table_GotKcups);
       MongoCollection<Document> products = database.getCollection(Constants.Collection_Product_IP);
       Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
       BsonDateTime laUsaTimeNow = new BsonDateTime(now.getTimeInMillis());
-      result = products.updateOne(Filters.eq(Constants._Id, product.get(Constants._Id)),
-        Updates.combine(Updates.inc(Constants.Visits, 1),
-          Updates.pushEach(Constants.Last_Update, Arrays.asList(laUsaTimeNow), new PushOptions().slice(10))),
+      result = products.updateOne(eq(Constants._Id, product.get(Constants._Id)),
+        combine(inc(Constants.Visits, 1),
+          pushEach(Constants.Last_Update, Arrays.asList(laUsaTimeNow), new PushOptions().slice(10))),
         new UpdateOptions().upsert(true));
     } catch (Exception ex) {
       ex.printStackTrace();
     } finally {
+      return result;
+    }
+  }
+
+  public static Calendar getProductLastUpdate(Document product) {
+    Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
+    MongoDatabase database = getDatabase(Constants.Table_GotKcups);
+    MongoCollection<Document> products = database.getCollection(Constants.Collection_Product_IP);
+    AggregateIterable<Document> res = products.aggregate(Arrays.asList(match(eq("_id.product_id",
+      product.get(Constants._Id))), unwind("$lastUpdate"),
+      group("product_id", max("maxdate", "$lastUpdate"))));
+    Document first = res.first();
+    if (first != null) {
+      now.setTime(first.getDate("maxdate"));
+    } else {
+      now = null;
+    }
+    return now;
+  }
+
+  public static UpdateResult updateVariantIP(Document variant, StringBuilder message) {
+    log.debug("Updating variant id " + variant.get(Constants.Id));
+    UpdateResult result = null;
+    try {
+      MongoDatabase database = getDatabase(Constants.Table_GotKcups);
+      MongoCollection<Document> variants = database.getCollection(Constants.Collection_Variant_IP);
+      Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
+      BsonDateTime laUsaTimeNow = new BsonDateTime(now.getTimeInMillis());
+      result = variants.updateOne(eq(Constants._Id, variant.get(Constants.Id)),
+        combine(inc(Constants.Visits, 1),
+          pushEach(Constants.Last_Update, Arrays.asList(laUsaTimeNow), new PushOptions().slice(10)),
+          pushEach(Constants.Changes, Arrays.asList(message.toString()), new PushOptions().slice(10))),
+        new UpdateOptions().upsert(true));
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    } finally {
+      log.debug("Updating done, variant id " + variant.get(Constants.Id));
       return result;
     }
   }

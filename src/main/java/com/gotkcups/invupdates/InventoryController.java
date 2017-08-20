@@ -7,13 +7,15 @@ package com.gotkcups.invupdates;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.MongoDBJDBC;
+import com.gotkcups.data.RequestsHandler;
 import com.gotkcups.io.Utilities;
-import com.mongodb.client.result.UpdateResult;
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +35,7 @@ import org.springframework.web.filter.CorsFilter;
 @RestController
 @RequestMapping("/")
 public class InventoryController {
-
+  private final static Logger log = LoggerFactory.getLogger(InventoryController.class);
   /*@RequestMapping(method = GET)
   public List<Object> list() {
     return null;
@@ -75,7 +77,11 @@ public class InventoryController {
     _id.put(Constants.Product_Id, id);
     _id.put(Constants.Remote_Host, request.getRemoteHost());
     product.put(Constants._Id, _id);
+    Calendar lastUpdate = MongoDBJDBC.getProductLastUpdate(product);
     MongoDBJDBC.updateProductIP(product);
+    if (Utilities.isMoreThanFourHoursAgo(lastUpdate)) {
+      RequestsHandler.register(id);
+    }
     return product;
   }
 

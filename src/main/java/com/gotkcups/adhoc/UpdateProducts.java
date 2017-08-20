@@ -40,14 +40,14 @@ public class UpdateProducts {
         Map<String, String> params = new HashMap<>();
         params.put("fields", "id,title,variants");
         Set<Document> sorted = new TreeSet<>();
-        Document resp = GateWay.getAllProducts("prod", params, 50, -1);
+        Document resp = GateWay.getAllProducts("prod", params, 50, 1);
         List<Document> products = (List) resp.get("products");
         for (Document product : products) {
             List<Document> variants = (List) product.get("variants");
             for (Document variant : variants) {
-                if (!(variant.getLong("product_id") == 11851462218L
+                if (!(variant.getLong("product_id") == 10305331210L
                   || variant.getLong("product_id") == 93350756417033l)) {
-                    continue;
+                    //continue;
                 }
                 if (variant.getLong(Constants.Id) != 11838139146l) {
                     //continue;
@@ -70,6 +70,10 @@ public class UpdateProducts {
                 String value = metafield.getString("value");
                 Document values = Document.parse(value);
                 variant.put("results", values);
+                if (variant.get(Constants.Sku).equals("286985S")) {
+                  int i = 0;
+                }
+                System.out.println("sku" + variant.get(Constants.Sku) + " url:");
                 register(values);
             }
         }
@@ -84,7 +88,7 @@ public class UpdateProducts {
             Double price = null;
             Double currentPrice = Double.valueOf(variant.getString(Constants.Price));
             for (Document vendor : vendors) {
-                waitForStatus(vendor);
+                Utilities.waitForStatus(vendor);
                 if (vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
                     status = Constants.In_Stock;
                     if (price == null || vendor.getDouble(Constants.Final_Price).doubleValue() < price) {
@@ -157,20 +161,7 @@ public class UpdateProducts {
         }
     }
 
-    private static void waitForStatus(Document vendor) {
-        while (true) {
-            if (!vendor.containsKey(Constants.Status)) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(UpdateProducts.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                System.out.println("waiting status " + vendor.getString(Constants.Sku));
-            } else {
-                break;
-            }
-        }
-    }
+    
     private final static int MIN_PURCHASE = 6500;
     private final static int MAX_PURCHASE = 11500;
     private static StringBuilder message = new StringBuilder();

@@ -28,6 +28,9 @@ public class SamsclubProcessor {
       vendor.put(Constants.Status, Constants.Page_Not_Available);
       return;
     }
+    if (html.contains("41,98")) {
+      int i = 0;
+    }
     String s = (String) vendor.get("sku");
     if (s.equals("822991S")) {
       int debug = 0;
@@ -122,6 +125,10 @@ public class SamsclubProcessor {
       if (m.find()) {
         m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(m.group());
         if (m.find()) {
+          String parseme = m.group();
+          if (parseme.equals("41,98")) {
+            int i = 0;
+          }
           retval = Math.max(retval, Double.parseDouble(m.group()));
           break;
         }

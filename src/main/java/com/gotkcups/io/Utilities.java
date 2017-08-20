@@ -6,7 +6,9 @@
  */
 package com.gotkcups.io;
 
+import com.gotkcups.data.Constants;
 import com.gotkcups.data.KeurigSelect;
+import com.gotkcups.data.RequestsHandler;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -14,8 +16,12 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -24,6 +30,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import org.bson.Document;
 
 /**
  *
@@ -34,6 +41,37 @@ public class Utilities {
   public static void main(String[] s) throws Exception {
     String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
     KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
+  }
+
+  private static Map<String, String> KEYS = new HashMap<String, String>();
+
+  static {
+    logger = Logger.getLogger(Utilities.class.getName());
+    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
+    Utilities.initKeys();
+  }
+
+  public static void initProductionKeys() {
+    KEYS.put("prod", Utilities.getApplicationProperty("https.key"));
+  }
+
+  private static void initKeys() {
+    StringBuilder sb = new StringBuilder("https://");
+    sb.append(Utilities.getApplicationProperty("key.prod"));
+    sb.append(":");
+    sb.append(Utilities.getApplicationProperty("password.prod"));
+    sb.append("@");
+    sb.append(Utilities.getApplicationProperty("store.prod"));
+    sb.append(".myshopify.com");
+    KEYS.put("prod", sb.toString());
+    sb = new StringBuilder("https://");
+    sb.append(Utilities.getApplicationProperty("key.dev"));
+    sb.append(":");
+    sb.append(Utilities.getApplicationProperty("password.dev"));
+    sb.append("@");
+    sb.append(Utilities.getApplicationProperty("store.dev"));
+    sb.append(".myshopify.com");
+    KEYS.put("dev", sb.toString());
   }
 
   public static String insertSpace(String span) {
@@ -73,13 +111,12 @@ public class Utilities {
       jaxbMarshaller.marshal(object, sw);
       retval = sw.toString();
     } catch (JAXBException ex) {
-      Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
     } finally {
       return retval;
     }
   }
 
-  static boolean shown = false;
+  private static Logger logger;
 
   public static String getApplicationProperty(String name) {
     File propertiesFile = new File("./application.properties");
@@ -88,23 +125,20 @@ public class Utilities {
     Properties props = new Properties();
     String value = null;
     try {
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-    System.out.println(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      System.out.println("**************************************************************");
-      if (!shown) {
-        shown = true;
+      if (KEYS.isEmpty()) {
+        logger.info("**************************************************************");
+        logger.info(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
+        logger.info("**************************************************************");
+        url = new URL(userFile);
+        props.load(url.openStream());
+        props.entrySet().stream().forEach(kv
+          -> {
+          KEYS.put((String) kv.getKey(), (String) kv.getValue());
+        });
+        value = KEYS.get(name);
+      } else {
+        value = KEYS.get(name);
       }
-      url = new URL(userFile);
-      props.load(url.openStream());
-      value = props.getProperty(name);
     } catch (Exception ex) {
       ex.printStackTrace();
     } finally {
@@ -121,7 +155,7 @@ public class Utilities {
       StringWriter sw = new StringWriter();
       retval = jaxbMarshaller.unmarshal(new InputStreamReader(new ByteArrayInputStream(xml.getBytes())));
     } catch (JAXBException ex) {
-      Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+      logger.log(Level.SEVERE, null, ex);
     } finally {
       return retval;
     }
@@ -196,5 +230,27 @@ public class Utilities {
       }
     }
     return value;
+  }
+
+  public static void waitForStatus(Document vendor) {
+    while (true) {
+      if (!vendor.containsKey(Constants.Status)) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+          logger.log(Level.SEVERE, null, ex);
+        }
+        System.out.println("waiting status " + vendor.getString(Constants.Sku));
+      } else {
+        break;
+      }
+    }
+  }
+  
+  public static boolean isMoreThanFourHoursAgo(Calendar then) {
+    if (then == null) return true;
+    Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
+    now.add(Calendar.HOUR_OF_DAY, -4);
+    return then.before(now);
   }
 }
