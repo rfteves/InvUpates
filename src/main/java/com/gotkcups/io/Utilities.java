@@ -8,7 +8,6 @@ package com.gotkcups.io;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.KeurigSelect;
-import com.gotkcups.data.RequestsHandler;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -246,11 +245,27 @@ public class Utilities {
       }
     }
   }
-  
+
   public static boolean isMoreThanFourHoursAgo(Calendar then) {
-    if (then == null) return true;
+    if (then == null) {
+      return true;
+    }
     Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
     now.add(Calendar.HOUR_OF_DAY, -4);
     return then.before(now);
+  }
+
+  public static String clean(String source) {
+    Matcher m = Pattern.compile("\\{ \"\\$numberLong\" : \"[0-9]+\" \\}").matcher(source);
+    while (m.find()) {
+      String g = m.group();
+      Matcher n = Pattern.compile("[0-9]+").matcher(g);
+      if (n.find()) {
+        String gg = n.group();
+        source = source.replace(g, gg);
+      }
+      m = Pattern.compile("\\{ \"\\$numberLong\" : \"[0-9]+\" \\}").matcher(source);
+    }
+    return source;
   }
 }

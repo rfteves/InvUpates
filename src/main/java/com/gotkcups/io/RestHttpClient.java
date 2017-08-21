@@ -107,7 +107,7 @@ public class RestHttpClient {
       HttpPut putRequest = new HttpPut(url);
       putRequest.addHeader("Content-Type", "application/json;charset=UTF-8");
       putRequest.addHeader("Accept", "application/json;charset=UTF-8");
-      StringEntity input = new StringEntity(data);
+      StringEntity input = new StringEntity(Utilities.clean(data));
       putRequest.setEntity(input);
       HttpResponse response = httpClient.execute(putRequest);
       in = new Scanner(response.getEntity().getContent());
