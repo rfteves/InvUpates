@@ -89,14 +89,20 @@
                 </configuration -->
                 <configuration>
                     <layout>MODULE</layout>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
                 </configuration>
-                <executions>
+                <!-- executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions -->
             </plugin>
         </plugins>
     </build>
