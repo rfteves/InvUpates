@@ -40,12 +40,12 @@ public class UpdateProducts {
         Map<String, String> params = new HashMap<>();
         params.put("fields", "id,title,variants");
         Set<Document> sorted = new TreeSet<>();
-        Document resp = GateWay.getAllProducts("prod", params, 50, 1);
+        Document resp = GateWay.getAllProducts("prod", params, 50, -1);
         List<Document> products = (List) resp.get("products");
         for (Document product : products) {
             List<Document> variants = (List) product.get("variants");
             for (Document variant : variants) {
-                if (!(variant.getLong("product_id") == 10305331210L
+                if (!(variant.getLong("product_id") == 9760556810L
                   || variant.getLong("product_id") == 93350756417033l)) {
                     //continue;
                 }

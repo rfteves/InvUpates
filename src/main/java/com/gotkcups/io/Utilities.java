@@ -8,6 +8,7 @@ package com.gotkcups.io;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.KeurigSelect;
+import com.gotkcups.data.RequestsHandler;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -21,14 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
 
 /**
@@ -36,6 +37,7 @@ import org.bson.Document;
  * @author rfteves
  */
 public class Utilities {
+  private final static Log log = LogFactory.getLog(Utilities.class);
 
   public static void main(String[] s) throws Exception {
     String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
@@ -45,7 +47,6 @@ public class Utilities {
   private static Map<String, String> KEYS = new HashMap<String, String>();
 
   static {
-    logger = Logger.getLogger(Utilities.class.getName());
     System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
     Utilities.initKeys();
   }
@@ -115,8 +116,6 @@ public class Utilities {
     }
   }
 
-  private static Logger logger;
-
   public static String getApplicationProperty(String name) {
     File propertiesFile = new File("./application.properties");
     String userFile = propertiesFile.toURI().toString();
@@ -125,9 +124,9 @@ public class Utilities {
     String value = null;
     try {
       if (KEYS.isEmpty()) {
-        logger.info("**************************************************************");
-        logger.info(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
-        logger.info("**************************************************************");
+        log.info("**************************************************************");
+        log.info(String.format("application.properties filename %s", propertiesFile.getCanonicalPath()));
+        log.info("**************************************************************");
         url = new URL(userFile);
         props.load(url.openStream());
         props.entrySet().stream().forEach(kv
@@ -139,7 +138,7 @@ public class Utilities {
         value = KEYS.get(name);
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      log.error("getApplicationProperty", ex);
     } finally {
       return value;
     }
@@ -154,7 +153,7 @@ public class Utilities {
       StringWriter sw = new StringWriter();
       retval = jaxbMarshaller.unmarshal(new InputStreamReader(new ByteArrayInputStream(xml.getBytes())));
     } catch (JAXBException ex) {
-      logger.log(Level.SEVERE, null, ex);
+      log.error("Objectify", ex);
     } finally {
       return retval;
     }
@@ -237,7 +236,7 @@ public class Utilities {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ex) {
-          logger.log(Level.SEVERE, null, ex);
+          log.error("waitForStatus", ex);
         }
         System.out.println("waiting status " + vendor.getString(Constants.Sku));
       } else {
@@ -246,12 +245,12 @@ public class Utilities {
     }
   }
 
-  public static boolean isMoreThanFourHoursAgo(Calendar then) {
+  public static boolean isMoreThanMinutesAgo(Calendar then, int minutes) {
     if (then == null) {
       return true;
     }
     Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
-    now.add(Calendar.HOUR_OF_DAY, -4);
+    now.add(Calendar.HOUR_OF_DAY, -minutes/60);
     return then.before(now);
   }
 

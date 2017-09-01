@@ -12,10 +12,7 @@ import com.gotkcups.io.Utilities;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.http.HttpServletRequest;
-
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +24,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  *
@@ -35,7 +34,7 @@ import org.springframework.web.filter.CorsFilter;
 @RestController
 @RequestMapping("/")
 public class InventoryController {
-  private final static Logger log = LoggerFactory.getLogger(InventoryController.class);
+  private final static Log log = LogFactory.getLog(InventoryController.class);
   /*@RequestMapping(method = GET)
   public List<Object> list() {
     return null;
@@ -79,7 +78,7 @@ public class InventoryController {
     product.put(Constants._Id, _id);
     Calendar lastUpdate = MongoDBJDBC.getProductLastUpdate(product);
     MongoDBJDBC.updateProductIP(product);
-    if (Utilities.isMoreThanFourHoursAgo(lastUpdate)) {
+    if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 5)) {
       RequestsHandler.register(id);
     }
     return product;

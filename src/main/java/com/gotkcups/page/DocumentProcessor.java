@@ -47,14 +47,14 @@ public class DocumentProcessor extends Thread {
       } else {
         html = urls.get(key);
       }
-      log.debug(String.format("DocProcessing %s %s", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
+      log.info(String.format("DocProcessing %s %s", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
       if (html == null || html.startsWith("Severe Error")) {
         vendor.put(Constants.Status, Constants.Page_Not_Available);
       } else {
         fetchCost(vendor, key, urls.get(key));
         calculatePrice(vendor);
       }
-      //System.out.println("Done processing " + vendor.getString(Constants.Sku));
+      log.info(String.format("DocProcessing %s %s done", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
     });
   }
 
