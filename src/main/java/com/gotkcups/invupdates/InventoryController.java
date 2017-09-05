@@ -78,7 +78,7 @@ public class InventoryController {
     product.put(Constants._Id, _id);
     Calendar lastUpdate = MongoDBJDBC.getProductLastUpdate(product);
     MongoDBJDBC.updateProductIP(product);
-    if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 5)) {
+    if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 2)) {
       RequestsHandler.register(id);
     }
     return product;

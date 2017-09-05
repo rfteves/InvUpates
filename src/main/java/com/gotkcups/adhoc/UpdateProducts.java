@@ -9,17 +9,12 @@ import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
 import static com.gotkcups.data.RequestsHandler.register;
 import com.gotkcups.io.GateWay;
-import com.gotkcups.io.RestHttpClient;
 import com.gotkcups.io.Utilities;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bson.Document;
 
 /**
@@ -45,7 +40,7 @@ public class UpdateProducts {
         for (Document product : products) {
             List<Document> variants = (List) product.get("variants");
             for (Document variant : variants) {
-                if (!(variant.getLong("product_id") == 9760556810L
+                if (!(variant.getLong("product_id") == 35514056727L
                   || variant.getLong("product_id") == 93350756417033l)) {
                     //continue;
                 }

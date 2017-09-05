@@ -178,7 +178,7 @@ public class SamsclubProcessor {
       return 0d;
     } else {
       // Not free shipping. Either we defined a defaultshipping or get it from application.properties
-      if (vendor.get(Constants.Default_Shipping) == null || vendor.getDouble(Constants.Default_Shipping) == 0) {
+      if (vendor.get(Constants.Default_Shipping) == null && vendor.getDouble(Constants.Default_Shipping) == 0) {
         return Double.parseDouble(Utilities.getApplicationProperty("samsclub.defaultshipping"));
       } else {
         return vendor.getDouble(Constants.Default_Shipping);
