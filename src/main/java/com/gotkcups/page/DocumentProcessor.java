@@ -87,7 +87,7 @@ public class DocumentProcessor extends Thread {
       BjsProcessor.costing(vendor, html);
     }
   }
-  public final static double MARKUP_TAXABLE = 0.835;
+  public final static double MARKUP_TAXABLE = 0.82;
   public final static double MARKUP_NON_TAXABLE = 0.9;
   public final static double MARKUP_DISCOUNT = 0.04;
 
