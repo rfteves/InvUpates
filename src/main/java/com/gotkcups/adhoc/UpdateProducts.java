@@ -40,6 +40,7 @@ public class UpdateProducts {
         Map<String, String> params = new HashMap<>();
         params.put("fields", "id,title,variants");
         Set<Document> sorted = new TreeSet<>();
+        Set<Document> repos = new TreeSet<>();
         Document resp = GateWay.getAllProducts("prod", params, 50, -1);
         List<Document> products = (List) resp.get("products");
         for (Document product : products) {
