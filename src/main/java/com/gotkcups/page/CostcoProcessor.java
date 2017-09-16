@@ -39,6 +39,9 @@ public class CostcoProcessor {
     }
     initProductOptions(vendor, html);
     String s = (String) vendor.get("sku");
+    if (s.equals("1074897C")) {
+      int b=0;
+    }
     String sku = s.substring(0, s.length() - 1);
     Document products = (Document) vendor.get(Constants.Costco_Products);
     List<Document> prods = (List) ((List) products.get("products")).get(0);

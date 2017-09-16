@@ -44,7 +44,7 @@ public class RestHttpClient {
       getRequest.addHeader("Content-Type", "text/html;charset=UTF-8");
       getRequest.addHeader("Accept", "text/html;charset=UTF-8");
       String edge = "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev> Edge/<EdgeHTML Rev>.<Windows Build>";
-      String other = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
+      edge = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
       getRequest.addHeader("User-Agent", edge);
       HttpResponse response = httpClient.execute(getRequest);
       in = new Scanner(response.getEntity().getContent());

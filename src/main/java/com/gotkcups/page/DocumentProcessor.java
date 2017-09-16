@@ -115,10 +115,9 @@ public class DocumentProcessor extends Thread {
     }
     price = Math.floor(price);
     if (price % 2 == 0) {
-      price -= 0.02;
-    } else {
-      price += 0.98;
+      price += 1.00;
     }
+    price += 0.98;
     vendor.put(Constants.Final_Price, price);
     vendor.put(Constants.List_Price, 0d);
     if (discounted) {

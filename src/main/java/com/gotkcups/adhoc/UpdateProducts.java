@@ -41,9 +41,9 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 9797802186L
+      if (!(product.getLong("id") == 10391365258L
         || product.getLong("id") == 93350756417033l)) {
-        //continue;
+        continue;
       }
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");
@@ -51,7 +51,7 @@ public class UpdateProducts {
         if (variant.getLong(Constants.Id) != 11838139146l) {
           //continue;
         }
-        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("k")) {
+        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("1074897c")) {
           //continue;
         }
         if (limit++ > 200) {
