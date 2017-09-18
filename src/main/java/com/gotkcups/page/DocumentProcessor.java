@@ -105,8 +105,8 @@ public class DocumentProcessor extends Thread {
     boolean discounted = vendor.getBoolean(Constants.Discounted);
     double price = cost * minqty;
     price += shipping;
-    if (minqty >= 5 && price > 60) {
-      price -= minqty * 0.20;
+    if (minqty >= 5 && price > 50) {
+      price -= minqty * 0.75;
     }
     if (taxable) {
       price /= (MARKUP_TAXABLE - (discounted ? MARKUP_DISCOUNT : 0.0));

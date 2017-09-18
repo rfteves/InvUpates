@@ -7,6 +7,14 @@ package com.gotkcups.adhoc;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.io.GateWay;
+import com.gotkcups.io.Utilities;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -26,12 +34,7 @@ public class BingIt {
    */
   public static void main(String[] args) throws Exception {
     StringBuilder sb = createAds();
-    System.out.println("xxxxxxxxxxxxxx");
-    System.out.println("xxxxxxxxxxxxxx");
-    System.out.println("xxxxxxxxxxxxxx");
-    System.out.println("xxxxxxxxxxxxxx");
-    System.out.println("xxxxxxxxxxxxxx");
-    System.out.println(sb.toString());
+    ftp(sb);
   }
 
   private static String[] GOOGLE_SHOPPING_FIELDS = {
@@ -55,18 +58,6 @@ public class BingIt {
     "gtin",
     "size",
     "color"
-  };
-  private static String[] ADWORDS_FIELDS = {
-    "id", "title", "description", "product_category", "product_type", "link", "image_link", "condition", "availability", "price", "gtin",
-    "brand", "gender", "age_group", "color", "size", "shippingxx", "shiping_weightxx",
-    "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"
-  };
-  private static String[] BINGADS_FIELDS = {
-    "id", "title", "brand", "link", "price", "description", "image_link", "gtin", "availability", "condition", "product_type",
-    "product_category", "gender", "age_group", "color", "size", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"
-  };
-  private static String[] ADWORDS_FIELDS_UPDATE = {
-    "id", "price", "availability"
   };
 
   private static String SEPARATOR = "\t";
@@ -231,5 +222,38 @@ public class BingIt {
     List<Document> images = (List) product.get("images");
     images.stream().forEach(kv -> meta.append(kv.getLong("id").toString(), kv.getString("src")));
     return meta;
+  }
+
+  public static final String CATALOG = "gotkcups.catalog.txt";
+
+  private static void ftp(StringBuilder data) {
+    Session session = null;
+    Channel channel = null;
+    try {
+      ByteArrayInputStream bis = new ByteArrayInputStream("teves.us\n".getBytes());
+      JSch ssh = new JSch();
+      ssh.setKnownHosts(bis);
+      java.util.Properties config = new java.util.Properties(); 
+      config.put("StrictHostKeyChecking", "no");
+      session = ssh.getSession(Utilities.getApplicationProperty("sftp.username"), "teves.us", 22);
+      session.setPassword(Utilities.getApplicationProperty("sftp.password"));
+      session.setConfig(config);
+      session.connect();
+      channel = session.openChannel("sftp");
+      channel.connect();
+      ChannelSftp sftp = (ChannelSftp) channel;
+      sftp.put(new ByteArrayInputStream(data.toString().getBytes()), "/var/www/tools.gotkcups.com/webapps/catalog.txt");
+    } catch (JSchException e) {
+      e.printStackTrace();
+    } catch (SftpException e) {
+      e.printStackTrace();
+    } finally {
+      if (channel != null) {
+        channel.disconnect();
+      }
+      if (session != null) {
+        session.disconnect();
+      }
+    }
   }
 }

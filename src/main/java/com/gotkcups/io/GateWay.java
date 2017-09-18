@@ -6,7 +6,6 @@
 package com.gotkcups.io;
 
 import com.gotkcups.data.Constants;
-import com.gotkcups.data.MongoDBJDBC;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +104,12 @@ public abstract class GateWay {
     return RestHttpClient.processGet(url.toString());
   }
 
+  public static String getOrder(String env, long orderId) {
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    url.append(String.format("/admin/orders/%s.json", orderId));
+    return RestHttpClient.processGet(url.toString());
+  }
+
   public static String createProduct(String env, String json) {
     StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products.json", ""));
@@ -160,8 +165,8 @@ public abstract class GateWay {
     product.put(Constants._Id, _id);
     MongoDBJDBC.updateProductIP(product);
     RequestsHandler.register(id);*/
-    Document id = new Document(Constants._Id, 8199345863L);
-    MongoDBJDBC.getProductLastUpdate(id);
+    //Document id = new Document(Constants._Id, 8199345863L);
+    //MongoDBJDBC.getProductLastUpdate(id);
   }
 
   public static String getProductMetafields(String env, long productId) {
