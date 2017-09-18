@@ -43,7 +43,7 @@ public class UpdateProducts {
     for (Document product : products) {
       if (!(product.getLong("id") == 10391365258L
         || product.getLong("id") == 93350756417033l)) {
-        continue;
+        //continue;
       }
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");

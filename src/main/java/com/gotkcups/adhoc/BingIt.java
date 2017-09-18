@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
 
 /**
@@ -29,12 +33,20 @@ import org.bson.Document;
  */
 public class BingIt {
 
+  private final static Log log = LogFactory.getLog(BingIt.class);
+
   /**
    * @param args the command line arguments
    */
-  public static void main(String[] args) throws Exception {
-    StringBuilder sb = createAds();
-    ftp(sb);
+  public static void main(String[] args) {
+    log.info("Begin BingIt");
+    try {
+      StringBuilder sb = createAds();
+      ftp(sb, args[0]);
+    } catch (Throwable ex) {
+      Logger.getLogger(BingIt.class.getName()).log(Level.SEVERE, null, ex);
+      log.error("Error BingIt", ex);
+    }
   }
 
   private static String[] GOOGLE_SHOPPING_FIELDS = {
@@ -226,14 +238,14 @@ public class BingIt {
 
   public static final String CATALOG = "gotkcups.catalog.txt";
 
-  private static void ftp(StringBuilder data) {
+  private static void ftp(StringBuilder data, String filename) {
     Session session = null;
     Channel channel = null;
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream("teves.us\n".getBytes());
       JSch ssh = new JSch();
       ssh.setKnownHosts(bis);
-      java.util.Properties config = new java.util.Properties(); 
+      java.util.Properties config = new java.util.Properties();
       config.put("StrictHostKeyChecking", "no");
       session = ssh.getSession(Utilities.getApplicationProperty("sftp.username"), "teves.us", 22);
       session.setPassword(Utilities.getApplicationProperty("sftp.password"));
@@ -242,7 +254,8 @@ public class BingIt {
       channel = session.openChannel("sftp");
       channel.connect();
       ChannelSftp sftp = (ChannelSftp) channel;
-      sftp.put(new ByteArrayInputStream(data.toString().getBytes()), "/var/www/tools.gotkcups.com/webapps/catalog.txt");
+      sftp.put(new ByteArrayInputStream(data.toString().getBytes()),
+        String.format("/var/www/tools.gotkcups.com/webapps/%s.txt", filename));
     } catch (JSchException e) {
       e.printStackTrace();
     } catch (SftpException e) {
