@@ -49,29 +49,6 @@ public class BingIt {
     }
   }
 
-  private static String[] GOOGLE_SHOPPING_FIELDS = {
-    "product.id",
-    "product.handle",
-    "product.title",
-    "global.description",
-    "link",
-    "image_link",
-    "additional_image_link",
-    "availability",
-    "price",
-    "category",
-    "vendor",
-    "adwords_grouping",
-    "adwords_labels",
-    "product_type",
-    "age_group",
-    "condition",
-    "gender",
-    "gtin",
-    "size",
-    "color"
-  };
-
   private static String SEPARATOR = "\t";
   private static String NEW_LINE = "\n";
   private static String BLANK_VALUE = "";
@@ -131,6 +108,10 @@ public class BingIt {
     sb.append(NEW_LINE);
     for (Document product : products) {
       String metastr = GateWay.getProductMetafields("prod", product.getLong("id"));
+      if (metastr == null) {
+        System.out.println(product.getLong("id"));
+        System.exit(0);
+      }
       Document metas = metaploy(metastr);
       List<Document> variants = (List) product.get("variants");
       List<Document> options = (List) product.get("options");

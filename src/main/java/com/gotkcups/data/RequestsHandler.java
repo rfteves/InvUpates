@@ -31,14 +31,6 @@ public class RequestsHandler extends Thread {
   private final static List<Document> REQUESTS = new ArrayList<>();
   private static RequestsHandler HANDLER;
 
-  public static void register(long id) {
-    log.info("Register product " + id);
-    String json = GateWay.getProduct(Constants.Production, id);
-    Document result = Document.parse(json);
-    Document product = (Document)result.get(Constants.Product);
-    registerProduct(product);
-  }
-
   public static void registerProduct(Document product) {
     List<Document> variants = (List) product.get("variants");
     Set<Document> sorted = new TreeSet<>();
@@ -158,6 +150,16 @@ public class RequestsHandler extends Thread {
   }
   private final static int MAX_PURCHASE = 11500;
   private static StringBuilder message = new StringBuilder();
+  
+
+  public static void register(long id) {
+    log.info("Register product " + id);
+    String json = GateWay.getProduct(Constants.Production, id);
+    Document result = Document.parse(json);
+    Document product = (Document)result.get(Constants.Product);
+    registerProduct(product);
+  }
+  
   public static void register(Document vendors) {
     if (HANDLER == null || !HANDLER.isAlive()) {
       synchronized (REQUESTS) {

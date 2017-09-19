@@ -41,7 +41,7 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 10391365258L
+      if (!(product.getLong("id") == 38178790666L
         || product.getLong("id") == 93350756417033l)) {
         //continue;
       }
@@ -157,6 +157,7 @@ public class UpdateProducts {
         //System.out.println(message.toString());
       }
     }
+    System.exit(0);
   }
 
   private final static int MIN_PURCHASE = 6500;

@@ -6,7 +6,7 @@
 package com.gotkcups.tools;
 
 import com.gotkcups.io.RestHttpClient;
-import com.gotkcups.sendmail.EmailTransport;
+import com.gotkcups.sendmail.SendMail;
 
 /**
  *
@@ -19,8 +19,8 @@ public class CheckHello {
             String retval = RestHttpClient.processGet("http://tools.gotkcups.com/inv/hello");
             System.out.println(retval);
         } catch (Exception ex) {
-            EmailTransport sendEmail = new EmailTransport("ricardo@drapers.com", "ricardo@drapers.com",
-                new String[]{"ricardo@drapers.com"}, "Check Hello", "RestHttpService /inv/hello not responding.");
+            SendMail sendEmail = new SendMail("ricardo@drapers.com", "ricardo@drapers.com",
+                "ricardo@drapers.com", "Check Hello", "RestHttpService /inv/hello not responding.");
         }
     }
 }
