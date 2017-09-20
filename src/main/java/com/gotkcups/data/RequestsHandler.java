@@ -9,7 +9,6 @@ import com.gotkcups.io.GateWay;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.page.DocumentProcessor;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
