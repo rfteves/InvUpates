@@ -70,6 +70,7 @@ public class HttpClientExample {
       = http.getFormParams(page, Utilities.getApplicationProperty("gotkcups.user"), Utilities.getApplicationProperty("gotkcups.password"));
     http.sendPost(url, globalConfig, cookieStore, postParams);
     String[] urls = new String[1];
+    
     /*Arrays.asList(headers).stream().forEach((Header header) -> {
       System.out.println(header.getName() + ":::" + header.getValue());
       if (header.getName().equals("Location")) {
@@ -148,8 +149,13 @@ public class HttpClientExample {
     post.setEntity(new UrlEncodedFormEntity(postParams));
     HttpResponse response = httpClient.execute(post);
     HttpEntity entity = response.getEntity();
-    EntityUtils.consume(entity);
+    String result = EntityUtils.toString(entity);
+    System.out.println("result: " + result);
+    //EntityUtils.consume(entity);
     Header[]headers = response.getAllHeaders();
+    Arrays.asList(headers).stream().forEach(hed->{
+      System.out.println(hed.getName() + ":::"+ hed.getValue());
+    });
     int responseCode = response.getStatusLine().getStatusCode();
     System.out.println("\nSending 'POST' request to URL : " + url);
     System.out.println("Response Code : " + responseCode);
