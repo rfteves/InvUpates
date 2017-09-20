@@ -39,7 +39,7 @@ public class ClientFormLogin {
       .setDefaultCookieStore(cookieStore)
       .build();
     try {
-      HttpGet httpget = new HttpGet("https://www.samsclub.com/sams/account/signin/login.jsp?xid=hdr_account_login&redirectURL=%2Fsams%2Fhomepage.jsp%3Fxid%3Dhdr_account_logout%26locale%3Den_US%26DPSLogout%3Dtrue");
+      HttpGet httpget = new HttpGet("https://49138d2352f2a25efe0f8e5cf58577d3:ce90c3e31f002b84eb0a7c84428db576@gotkcups.myshopify.com/admin/checkouts/47196700695");
       CloseableHttpResponse response1 = httpclient.execute(httpget);
       try {
         HttpEntity entity = response1.getEntity();
@@ -56,6 +56,7 @@ public class ClientFormLogin {
             System.out.println("- " + cookies.get(i).toString());
           }
         }
+        
       } finally {
         response1.close();
       }
