@@ -223,4 +223,43 @@ public abstract class GateWay {
     }
     return retval;
   }
+  
+  public static Document getAllCustomers(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
+    final Document[] object = new Document[1];
+    Document next = null;
+    int page = 0;
+    params.put("limit", "" + pageLimit);
+    int pageMax = pageLimit;
+    while (pageLimit == pageMax) {
+      params.put("page", ++page + "");
+      String take = GateWay.getCustomers(env, params);
+      Document tempdoc = Document.parse(take);
+      if (object[0] == null) {
+        object[0] = tempdoc;
+      } else {
+        next = tempdoc;
+        List<Document> docs = (List) next.get("customers");
+        docs.stream().forEach(((List) object[0].get("customers"))::add);
+      }
+      pageLimit = ((List) tempdoc.get("customers")).size();
+      if (bookLimit < 0) {
+        continue;
+      } else if (((List) object[0].get("customers")).size() >= bookLimit) {
+        break;
+      }
+      //if (true)break;
+    }
+    return object[0];
+  }
+
+  public static String getCustomers(String env, Map<String, String> params) {
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    if (params != null && params.containsKey("id")) {
+      url.append(String.format("/admin/customers/%s.json", params.remove("id").toString()));
+    } else {
+      url.append(String.format("/admin/customers.json"));
+    }
+    GateWay.processParams(url, params);
+    return RestHttpClient.processGet(url.toString());
+  }
 }

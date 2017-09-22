@@ -41,7 +41,7 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 9695812874L
+      if (!(product.getLong("id") == 70696304663L
         || product.getLong("id") == 93350756417033l)) {
         continue;
       }
