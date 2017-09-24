@@ -41,13 +41,17 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 70696304663L
-        || product.getLong("id") == 93350756417033l)) {
-        continue;
+      if (!(product.getLong("id") == 10093322442L
+        || product.getLong("id") == 97605568109999l
+        || product.getLong("id") == 933507564170339999l)) {
+        //continue;
       }
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
+        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("b")) {
+          continue;
+        }
         if (variant.getLong(Constants.Id) != 11838139146l) {
           //continue;
         }
@@ -151,7 +155,7 @@ public class UpdateProducts {
         message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
-        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        //GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
         Thread.sleep(1000);
       } else {
         //System.out.println(message.toString());

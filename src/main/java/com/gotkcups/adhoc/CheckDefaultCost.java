@@ -19,7 +19,7 @@ import org.bson.Document;
  *
  * @author rfteves
  */
-public class CheckNoMetafield {
+public class CheckDefaultCost {
 
   /**
    * @param args the command line arguments
@@ -48,16 +48,23 @@ public class CheckNoMetafield {
           //continue;
         }
         Document d = new JDocument();
+        variant.put("product_title", product.getString("title"));
         d.putAll(variant);
-        variant.put("title", product.getString("title"));
         sorted.add(d);
       }
     }
     for (Document variant : sorted) {
       Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
-      if (metafield == null) {
-        System.out.println(variant.getString("title") + " " + variant.getString("sku"));
+      if (metafield != null) {
+        String value = metafield.getString("value");
+        Document values = Document.parse(value);
+        Document vendor = (Document)((List)values.get("vendors")).get(0);
+        if (vendor.containsKey(Constants.Default_Cost)) {
+          System.out.println(variant.getString("product_title") + " " +
+            variant.getLong(Constants.Product_Id) + " " + vendor.getDouble(Constants.Default_Cost));
+        }
       }
     }
   }
+  
 }
