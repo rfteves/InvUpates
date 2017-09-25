@@ -55,7 +55,6 @@ public class RearrangeVariants {
       }
       Document p = new Document();
       p.put("product", product);
-      log.info("Rearranging:\n" + p.toJson());
       GateWay.updateProduct("prod", product.getLong("id"), p.toJson());
     }
   }

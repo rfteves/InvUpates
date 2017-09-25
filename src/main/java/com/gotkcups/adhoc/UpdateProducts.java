@@ -50,7 +50,7 @@ public class UpdateProducts {
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
         if (!variant.getString(Constants.Sku).toLowerCase().endsWith("b")) {
-          continue;
+          //continue;
         }
         if (variant.getLong(Constants.Id) != 11838139146l) {
           //continue;
@@ -155,7 +155,7 @@ public class UpdateProducts {
         message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
-        //GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
         Thread.sleep(1000);
       } else {
         //System.out.println(message.toString());
