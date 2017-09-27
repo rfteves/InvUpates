@@ -232,15 +232,18 @@ public class Utilities {
 
   public static void waitForStatus(Document vendor) {
     while (true) {
-      if (!vendor.containsKey(Constants.Status)) {
+      if (vendor.containsKey(Constants.Status) && !vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
+        break;
+      } else if (vendor.containsKey(Constants.Status) && vendor.getString(Constants.Status).equals(Constants.In_Stock) &&
+        vendor.containsKey(Constants.Final_Price)) {
+        break;
+      } else {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ex) {
           log.error("waitForStatus", ex);
         }
         System.out.println("waiting status " + vendor.getString(Constants.Sku));
-      } else {
-        break;
       }
     }
   }

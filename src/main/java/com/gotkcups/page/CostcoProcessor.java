@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bson.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 /**
  *
@@ -86,7 +88,9 @@ public class CostcoProcessor {
       vendor.put(Constants.Final_Cost, cost);
     }
     boolean expired = true;
-    if (html.contains("<p class=\"PromotionalText\">")) {
+    org.jsoup.nodes.Document doc = Jsoup.parse(html);
+    if (doc.getElementsByClass("PromotionalText").size() ==1 &&
+      !doc.getElementsByClass("PromotionalText").get(0).text().contains("Limit ")) {
       int start = html.indexOf("<p class=\"PromotionalText\">") + "<p class=\"PromotionalText\">".length();
       int end = html.indexOf("</p>", start);
       String str = html.substring(start, end);
@@ -107,6 +111,9 @@ public class CostcoProcessor {
       }
     }
     vendor.put(Constants.Discounted, !expired);
+    if (expired) {
+      vendor.put(Constants.Final_Cost, vendor.get(Constants.List_Cost));
+    }
     int qty = retrieveMinimumQuantity(vendor, html);
     vendor.put(Constants.Min_Quantity, qty);
     int start = html.indexOf("<p id=\"shipping-statement\">");
