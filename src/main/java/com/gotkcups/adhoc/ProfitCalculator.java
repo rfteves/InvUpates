@@ -43,7 +43,7 @@ public class ProfitCalculator {
       if (!(product.getLong("id") == 9760556810L
         || product.getLong("id") == 9760556810999l
         || product.getLong("id") == 10078355570634l)) {
-        continue;
+        //continue;
       }
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
