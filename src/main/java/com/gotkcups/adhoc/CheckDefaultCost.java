@@ -55,7 +55,7 @@ public class CheckDefaultCost {
     }
     for (Document variant : sorted) {
       Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
-      Thread.sleep(650);
+      Thread.sleep(550);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
