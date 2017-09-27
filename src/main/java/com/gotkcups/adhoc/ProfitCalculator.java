@@ -37,12 +37,12 @@ public class ProfitCalculator {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,product_type,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = GateWay.getAllProducts("prod", params, 50, -11);
+    Document resp = GateWay.getAllProducts("prod", params, 150, -11);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 6945801863L
-        || product.getLong("id") == 9760556810l
-        || product.getLong("id") == 10078370634l)) {
+      if (!(product.getLong("id") == 9760556810L
+        || product.getLong("id") == 9760556810999l
+        || product.getLong("id") == 10078355570634l)) {
         continue;
       }
       List<Document> variants = (List) product.get("variants");
@@ -86,15 +86,13 @@ public class ProfitCalculator {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
         Document vendor = (Document)((List)values.get("vendors")).get(0);
-        if (vendor.getString(Constants.URL).contains("/Coffee-Makers") ||
-          vendor.getString(Constants.URL).contains("/Brewers")) {
-          defaultshipping = -vendor.getDouble(Constants.DefaultShipping);
-        } else if (vendor.containsKey(Constants.DefaultShipping)) {
+        if (vendor.containsKey(Constants.DefaultShipping)) {
           defaultshipping = vendor.getDouble(Constants.DefaultShipping);
         }
       }
       cost -= defaultshipping;
-      cost = Math.floor(cost) + 1.98;
+      // Estimated cost no tax
+      cost *= 1 + AVERAGE_TAX_RATE;
       builder.append(price - cost);
       System.out.println(builder.toString());
     }
