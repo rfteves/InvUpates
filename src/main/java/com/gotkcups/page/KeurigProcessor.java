@@ -74,7 +74,7 @@ public class KeurigProcessor {
       if (anchor.getDataPurchasable().equalsIgnoreCase("true")) {
         product.put(Constants.Status, Constants.In_Stock);
         product.put(Constants.Discounted, false);
-        double cost = Double.parseDouble(anchor.getDataPrice().substring(1));
+        double cost = Double.parseDouble(anchor.getDataPrice());
         cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BREWERS)) * 100) * 0.01;
         if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
           cost = product.getDouble(Constants.Default_Cost);

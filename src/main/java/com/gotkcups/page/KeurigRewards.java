@@ -95,7 +95,7 @@ public class KeurigRewards {
         if (input.attr("name").equals("productCodePost")) {
           anchor.setDataCode(input.attr("value"));
         } else if (input.attr("name").equals("rPUnitPrice")) {//rPDisplayPrice
-          anchor.setDataCode(input.attr("value"));
+          anchor.setDataPrice(input.attr("value"));
         }
       }
       Elements button = form.getElementsByTag("button");

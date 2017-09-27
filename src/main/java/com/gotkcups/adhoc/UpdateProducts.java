@@ -44,7 +44,7 @@ public class UpdateProducts {
       if (!(product.getLong("id") == 9760556810L
         || product.getLong("id") == 97605568109999l
         || product.getLong("id") == 933507564170339999l)) {
-        //continue;
+        continue;
       }
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");
@@ -96,7 +96,7 @@ public class UpdateProducts {
           if (price == null || vendor.getDouble(Constants.Final_Price).doubleValue() < price) {
             price = vendor.getDouble(Constants.Final_Price);
           }
-        } else if (status == null) {
+        } else {
           status = Constants.Out_Of_Stock;
         }
       }
@@ -155,7 +155,7 @@ public class UpdateProducts {
         message.insert(0, variant.getLong(Constants.Id));
         System.out.println(message.toString());
         int debug = 0;
-        //GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
         Thread.sleep(1000);
       } else {
         //System.out.println(message.toString());
