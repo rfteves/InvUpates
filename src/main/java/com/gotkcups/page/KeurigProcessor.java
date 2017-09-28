@@ -69,9 +69,9 @@ public class KeurigProcessor {
       });
     } else if (url.contains("/Brewers") || url.contains("/Coffee-Makers")) {
       String s = (String) product.get("sku");
-      String sku = s.substring(0, s.length() - 1);
+      String sku = trimSku(s);
       KeurigAnchor anchor = KeurigRewards.getKeurigAnchor(sku);
-      if (anchor.getDataPurchasable().equalsIgnoreCase("true")) {
+      if (anchor != null && anchor.getDataPurchasable().equalsIgnoreCase("true")) {
         product.put(Constants.Status, Constants.In_Stock);
         product.put(Constants.Discounted, false);
         double cost = Double.parseDouble(anchor.getDataPrice());
@@ -178,4 +178,12 @@ public class KeurigProcessor {
     }
   }
   private final static StringBuilder sb = new StringBuilder();
+  
+  
+  public static String trimSku(String sku) {
+    while (sku.toLowerCase().charAt(sku.length() -1) >= 'a' && sku.toLowerCase().charAt(sku.length() -1) <= 'z' ) {
+      sku = sku.substring(0, sku.length() - 1);
+    }
+    return sku;
+  }
 }
