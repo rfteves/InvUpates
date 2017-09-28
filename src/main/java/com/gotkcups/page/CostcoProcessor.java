@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bson.Document;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  *
@@ -89,6 +90,14 @@ public class CostcoProcessor {
     }
     boolean expired = true;
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
+    if (vendor.getDouble(Constants.List_Cost) == -1) {
+      Elements elements = doc.getElementsByClass("online-price");
+      for (Element element: elements) {
+        if (element.attr("data-catentry").equals(product.getString("catentry"))) {
+          int k = 0;
+        }
+      }
+    }
     if (doc.getElementsByClass("PromotionalText").size() ==1 &&
       !doc.getElementsByClass("PromotionalText").get(0).text().contains("Limit ")) {
       int start = html.indexOf("<p class=\"PromotionalText\">") + "<p class=\"PromotionalText\">".length();
