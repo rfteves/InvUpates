@@ -5,6 +5,7 @@
  */
 package com.gotkcups.data;
 
+import com.gotkcups.adhoc.UpdateProducts;
 import com.gotkcups.io.GateWay;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.page.DocumentProcessor;
@@ -132,7 +133,9 @@ public class RequestsHandler extends Thread {
         change.put(Constants.Id, variant.getLong(Constants.Id));
         if (status.equals(Constants.In_Stock)) {
           change.put(Constants.Inventory_Quantity, qty);
-          change.put(Constants.Price, price.toString());
+          if (UpdateProducts.isPriceOkToChange(variant, price, currentPrice)) {
+            change.put(Constants.Price, price.toString());
+          }
           change.put(Constants.Compare_At_Price, Double.valueOf(0d).toString());
         } else {
           change.put(Constants.Inventory_Quantity, 0);
@@ -149,16 +152,15 @@ public class RequestsHandler extends Thread {
   }
   private final static int MAX_PURCHASE = 11500;
   private static StringBuilder message = new StringBuilder();
-  
 
   public static void register(long id) {
     log.info("Register product " + id);
     String json = GateWay.getProduct(Constants.Production, id);
     Document result = Document.parse(json);
-    Document product = (Document)result.get(Constants.Product);
+    Document product = (Document) result.get(Constants.Product);
     registerProduct(product);
   }
-  
+
   public static void register(Document vendors) {
     if (HANDLER == null || !HANDLER.isAlive()) {
       synchronized (REQUESTS) {
@@ -171,16 +173,19 @@ public class RequestsHandler extends Thread {
     HANDLER.add(vendors);
   }
 
+  private boolean accessing;
+
   private void add(Document vendors) {
     synchronized (this) {
-      while (!REQUESTS.isEmpty()) {
+      while (accessing) {
         try {
-          this.wait();
+          this.wait(150);
         } catch (InterruptedException ex) {
           Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
       }
       REQUESTS.add(vendors);
+      accessing = true;
       this.notifyAll();
     }
   }
@@ -190,20 +195,25 @@ public class RequestsHandler extends Thread {
     Map<String, String> urls = new LinkedHashMap<>();
     while (true) {
       synchronized (this) {
-        while (REQUESTS.isEmpty()) {
+        while (!accessing) {
           try {
             this.wait();
           } catch (InterruptedException ex) {
             Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
           }
         }
-        vendors = REQUESTS.remove(0);
+        if (!REQUESTS.isEmpty()) {
+          vendors = REQUESTS.remove(0);
+        }
+        accessing = false;
         this.notifyAll();
+      }
+      if (vendors != null) {
+        DocumentProcessor.accept(urls, vendors);
       }
       if (urls.size() > 30) {
         urls.clear();
       }
-      DocumentProcessor.accept(urls, vendors);
     }
   }
 }

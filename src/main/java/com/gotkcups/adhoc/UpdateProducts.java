@@ -10,11 +10,16 @@ import com.gotkcups.data.JDocument;
 import static com.gotkcups.data.RequestsHandler.register;
 import com.gotkcups.io.GateWay;
 import com.gotkcups.io.Utilities;
+import com.gotkcups.sendmail.SendMail;
+import com.gotkcups.tools.CheckHello;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
@@ -24,7 +29,9 @@ import org.bson.Document;
  * @author ricardo
  */
 public class UpdateProducts {
+
   private final static Log log = LogFactory.getLog(UpdateProducts.class);
+
   /**
    * @param args the command line arguments
    */
@@ -41,7 +48,7 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 10129284298L
+      if (!(product.getLong("id") == 113695391767L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
         continue;
@@ -49,7 +56,7 @@ public class UpdateProducts {
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
-        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("b")) {
+        if (!variant.getString(Constants.Sku).toLowerCase().endsWith("c")) {
           //continue;
         }
         if (variant.getLong(Constants.Id) != 11838139146l) {
@@ -144,7 +151,9 @@ public class UpdateProducts {
         change.put(Constants.Id, variant.getLong(Constants.Id));
         if (status.equals(Constants.In_Stock)) {
           change.put(Constants.Inventory_Quantity, qty);
-          change.put(Constants.Price, price.toString());
+          if (UpdateProducts.isPriceOkToChange(variant, price, currentPrice)) {
+            change.put(Constants.Price, price.toString());
+          }
           change.put(Constants.Compare_At_Price, Double.valueOf(0d).toString());
         } else {
           change.put(Constants.Inventory_Quantity, 0);
@@ -161,10 +170,56 @@ public class UpdateProducts {
         //System.out.println(message.toString());
       }
     }
+    notifyMessages();
     System.exit(0);
   }
 
   private final static int MIN_PURCHASE = 6500;
   private final static int MAX_PURCHASE = 11500;
   private static StringBuilder message = new StringBuilder();
+
+  private static List<String> messages = new ArrayList<>();
+
+  public static boolean isPriceOkToChange(Document variant, Double price, Double currentPrice) {
+    boolean retval = false;
+    if (price.doubleValue() >= currentPrice.doubleValue()) {
+      retval = true;
+    } else {
+      // Price decrease
+      double ratio = (currentPrice - price) / currentPrice;
+      if (ratio > 0.20) {
+        messages.add(String.format("Price change > %s, product %s %f to %f<br>", "20%",
+          variant.getString(Constants.Sku), currentPrice, price));
+        UpdateProducts.notifyMessages();
+      } else {
+        retval = true;
+      }
+    }
+    return retval;
+  }
+
+  static {
+    System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));
+    System.getProperties().setProperty("mail.username", Utilities.getApplicationProperty("mail.username"));
+    System.getProperties().setProperty("mail.password", Utilities.getApplicationProperty("mail.password"));
+    System.getProperties().setProperty("mail.smtp.port", Utilities.getApplicationProperty("mail.smtp.port"));
+    System.getProperties().put("mail.smtp.auth", "true");
+    System.getProperties().put("mail.smtp.starttls.enable", "true");
+  }
+  
+  private static long lastSent = 0;
+  private static void notifyMessages() {
+    if (messages.size() == 0 || lastSent > System.currentTimeMillis()) return;
+    lastSent = System.currentTimeMillis() + (15*60*1000);
+    try {
+      StringBuilder mess = new StringBuilder();
+      messages.stream().forEach(mess::append);
+      messages.clear();
+      SendMail sendEmail = new SendMail("ricardo.teves@gotkcups.com", "ricardo.teves@gotkcups.com",
+        "ricardo.teves@gotkcups.com", "UpdatesProducts Notification", mess.toString());
+      sendEmail.send();
+    } catch (Exception ex1) {
+      Logger.getLogger(CheckHello.class.getName()).log(Level.SEVERE, null, ex1);
+    }
+  }
 }

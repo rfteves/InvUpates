@@ -6,7 +6,10 @@
 package com.gotkcups.tools;
 
 import com.gotkcups.io.RestHttpClient;
+import com.gotkcups.io.Utilities;
 import com.gotkcups.sendmail.SendMail;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,13 +17,21 @@ import com.gotkcups.sendmail.SendMail;
  */
 public class CheckHello {
 
-    public static void main(String[] args) {
-        try {
-            String retval = RestHttpClient.processGet("http://tools.gotkcups.com/inv/hello");
-            System.out.println(retval);
-        } catch (Exception ex) {
-            SendMail sendEmail = new SendMail("ricardo@drapers.com", "ricardo@drapers.com",
-                "ricardo@drapers.com", "Check Hello", "RestHttpService /inv/hello not responding.");
-        }
+  static {
+    System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));
+    System.getProperties().setProperty("mail.username", Utilities.getApplicationProperty("mail.username"));
+    System.getProperties().setProperty("mail.password", Utilities.getApplicationProperty("mail.password"));
+    System.getProperties().setProperty("mail.smtp.port", Utilities.getApplicationProperty("mail.smtp.port"));
+    System.getProperties().put("mail.smtp.auth", "true");
+    System.getProperties().put("mail.smtp.starttls.enable", "true");
+  }
+  public static void main(String[] args) {
+    try {
+      SendMail sendEmail = new SendMail("ricardo.teves@gotkcups.com", "ricardo.teves@gotkcups.com",
+        "ricardo.teves@gotkcups.com", "Check Hello", "RestHttpService /inv/hello not responding.");
+      sendEmail.send();
+    } catch (Exception ex1) {
+      Logger.getLogger(CheckHello.class.getName()).log(Level.SEVERE, null, ex1);
     }
+  }
 }
