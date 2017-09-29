@@ -100,6 +100,8 @@ public class KeurigRewards {
       }
       Elements button = form.getElementsByTag("button");
       anchor.setDataPurchasable("" + (button.size() == 1));
+    } else {
+      anchor = null;
     }
   }
 

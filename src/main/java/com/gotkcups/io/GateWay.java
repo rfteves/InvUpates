@@ -91,6 +91,12 @@ public abstract class GateWay {
       }
     }
   }
+  
+  public static String getCustomersCount(String env) {
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    url.append("/admin/customers/count.json");
+    return RestHttpClient.processGet(url.toString());
+  }
 
   public static String createVariantMetaField(String env, long productId, long variantId, String jsondata) {
     StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));

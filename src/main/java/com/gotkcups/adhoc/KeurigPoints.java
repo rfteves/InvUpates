@@ -8,8 +8,11 @@ package com.gotkcups.adhoc;
 import com.gotkcups.forms.Login;
 import com.gotkcups.io.Utilities;
 import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.http.NameValuePair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,11 +28,23 @@ public class KeurigPoints {
    * @param args the command line arguments
    */
   public static void main(String[] args) throws Exception {
+    String[]prefixes = {"client", "buyer"};
+    Arrays.asList(prefixes).stream().forEach(prefix->{
+      try {
+        KeurigPoints.userPrefix(prefix);
+      } catch (Exception ex) {
+        Logger.getLogger(KeurigPoints.class.getName()).log(Level.SEVERE, null, ex);
+      }
+    });
+  }
+  
+  private static void userPrefix(String prefix) throws Exception {
+    
     Map<String,String> params = new HashMap<>();
     params.put("j_password", Utilities.getApplicationProperty("keurig.password"));
     Login login = new Login();
     for (int i = 1; i < 25; i++) {
-      params.put("j_username", String.format("buyer%s@acwnn.org", "" + i));
+      params.put("j_username", String.format("%s%s@acwnn.org", prefix, "" + i));
       String html = login.sendGet("https://www.keurig.com/login");
       List<NameValuePair> postParams = login.getFormParams(html, params);
       org.bson.Document cookies = login.sendPost("https://www.keurig.com/j_spring_security_check", postParams);

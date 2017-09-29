@@ -5,19 +5,20 @@
  */
 package com.gotkcups.tests;
 
-import com.gotkcups.data.RequestsHandler;
+import com.gotkcups.data.Constants;
+import com.gotkcups.io.GateWay;
 
 /**
  *
- * @author Ricardo
+ * @author ricardo
  */
-public class TestRegisterLongId {
+public class TestCustomerCount {
 
   /**
    * @param args the command line arguments
    */
   public static void main(String[] args) {
-    RequestsHandler.register(9760583434L);
+    System.out.println(GateWay.getCustomersCount(Constants.Production));
   }
   
 }

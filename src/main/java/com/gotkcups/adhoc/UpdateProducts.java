@@ -48,10 +48,10 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 50, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 113695391767L
+      if (!(product.getLong("id") == 96409059351L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
-        continue;
+        //continue;
       }
       RearrangeVariants.process(product);
       List<Document> variants = (List) product.get("variants");

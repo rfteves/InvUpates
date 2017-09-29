@@ -85,19 +85,35 @@ public class Login {
   }
 
   public List<NameValuePair> getFormParams(
-          String html, Map<String,String>keyval)
+          String html, Map<String,String>keyvalId)
+          throws UnsupportedEncodingException {
+    return this.getFormParams(html, keyvalId, null);
+  }
+
+  public List<NameValuePair> getFormParams(
+          String html, Map<String,String>keyval, String formId)
           throws UnsupportedEncodingException {
     Document doc = Jsoup.parse(html);
-    Element loginform = doc.getElementsByTag("form").first();
+    Element loginform = null;
+    if (formId == null) {
+      loginform = doc.getElementsByTag("form").first();
+    } else {
+      loginform = doc.getElementById(formId);
+    }
+    
     Elements inputElements = loginform.getElementsByTag("input");
     List<NameValuePair> paramList = new ArrayList<NameValuePair>();
+    boolean[]retval = new boolean[1];
     inputElements.stream().forEach(element->{
       String key = element.attr("name");
       String value = element.attr("value");
-      keyval.keySet().stream().filter(k-> key.equals(key)).forEach(k->{
+      System.out.println(key + ":::" + value);
+      retval[0] = false;
+      keyval.keySet().stream().filter(k-> k.equals(key)).forEach(k->{
         paramList.add(new BasicNameValuePair(key, keyval.get(key)));
+        retval[0] = true;
       });
-      if (!paramList.contains(key)) {
+      if (!retval[0]) {
         paramList.add(new BasicNameValuePair(key, value));
       }
     });
