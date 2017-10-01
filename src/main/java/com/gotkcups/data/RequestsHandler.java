@@ -9,6 +9,8 @@ import com.gotkcups.adhoc.UpdateProducts;
 import com.gotkcups.io.GateWay;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.page.DocumentProcessor;
+import com.gotkcups.sendmail.SendMail;
+import com.gotkcups.tools.CheckHello;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,81 +73,7 @@ public class RequestsHandler extends Thread {
           status = Constants.Out_Of_Stock;
         }
       }
-      message.setLength(0);
-      int minQty = 0, maxQty = 0, qty = 0;
-      if (status.equals(Constants.In_Stock)) {
-        maxQty = Math.min((int) (MAX_PURCHASE / price), 150);
-        minQty = (int) (0.25 * maxQty);
-      }
-      if (status.equals(Constants.In_Stock) && currentStatus.equals(status)) {
-        if (price.doubleValue() != currentPrice) {
-          message.append(variant.getString(Constants.Sku));
-          message.append(" old: ");
-          message.append(currentPrice);
-          message.append(" change: ");
-          message.append(price);
-          qty = maxQty;
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
-          || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
-          qty = maxQty;
-          message.append(variant.getString(Constants.Sku));
-          message.append(" change qty");
-        } else {
-          message.append(variant.getString(Constants.Sku));
-          message.append(" same: ");
-          message.append(currentPrice);
-        }
-      } else if (status.equals(Constants.In_Stock)) {
-        if (price.doubleValue() != currentPrice) {
-          message.append(variant.getString(Constants.Sku));
-          message.append(" old: ");
-          message.append(currentPrice);
-          message.append(" change: ");
-          message.append(price);
-          message.append(" change inStock");
-          qty = maxQty;
-        } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
-          || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
-          qty = maxQty;
-          message.append(variant.getString(Constants.Sku));
-          message.append(" change inStock");
-        } else {
-          message.append(variant.getString(Constants.Sku));
-          message.append(" same: ");
-          message.append(currentPrice);
-          message.append(" inStock");
-        }
-      } else if (!status.equals(currentStatus)) {
-        message.append(variant.getString(Constants.Sku));
-        message.append(" change outOfStock");
-      } else {
-        if (status.equals(Constants.In_Stock)) {
-          if (variant.getInteger(Constants.Inventory_Quantity) < minQty
-            || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
-            qty = maxQty;
-            message.append(variant.getString(Constants.Sku));
-            message.append(" change qty");
-          }
-        }
-      }
-      if (message.toString().contains("change")) {
-        Document change = new Document();
-        change.put(Constants.Id, variant.getLong(Constants.Id));
-        if (status.equals(Constants.In_Stock)) {
-          change.put(Constants.Inventory_Quantity, qty);
-          if (UpdateProducts.isPriceOkToChange(variant, price, currentPrice)) {
-            change.put(Constants.Price, price.toString());
-          }
-          change.put(Constants.Compare_At_Price, Double.valueOf(0d).toString());
-        } else {
-          change.put(Constants.Inventory_Quantity, 0);
-        }
-        Document pack = new Document();
-        pack.put(Constants.Variant, change);
-        message.insert(0, ", ");
-        message.insert(0, variant.getLong(Constants.Id));
-        GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
-      }
+      RequestsHandler.updateVariant(status, currentStatus, price, currentPrice, variant);
       MongoDBJDBC.updateVariantIP(variant, message);
       log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Id), message.toString()));
     }
@@ -214,6 +142,115 @@ public class RequestsHandler extends Thread {
       if (urls.size() > 30) {
         urls.clear();
       }
+    }
+  }
+
+  public static void updateVariant(String status, String currentStatus, Double price, double currentPrice,
+    Document variant) {
+    message.setLength(0);
+    int minQty = 0, maxQty = 0, qty = 0;
+    if (status.equals(Constants.In_Stock)) {
+      maxQty = Math.min((int) (MAX_PURCHASE / price), 150);
+      minQty = (int) (0.25 * maxQty);
+    }
+    if (status.equals(Constants.In_Stock) && currentStatus.equals(status)) {
+      if (price.doubleValue() != currentPrice) {
+        message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price);
+        qty = maxQty;
+      } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+        || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+        qty = maxQty;
+        message.append(variant.getString(Constants.Sku) + " change qty");
+      } else {
+        message.append(variant.getString(Constants.Sku) + " same: " + currentPrice);
+      }
+    } else if (status.equals(Constants.In_Stock)) {
+      if (price.doubleValue() != currentPrice) {
+        message.append(variant.getString(Constants.Sku) + " old: " + currentPrice + " change: " + price + " change inStock");
+        qty = maxQty;
+      } else if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+        || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+        qty = maxQty;
+        message.append(variant.getString(Constants.Sku) + " change inStock");
+      } else {
+        message.append(variant.getString(Constants.Sku) + " same: " + currentPrice + " inStock");
+      }
+    } else if (!status.equals(currentStatus)) {
+      message.append(variant.getString(Constants.Sku) + " change outOfStock");
+    } else {
+      if (status.equals(Constants.In_Stock)) {
+        if (variant.getInteger(Constants.Inventory_Quantity) < minQty
+          || variant.getInteger(Constants.Inventory_Quantity) > maxQty) {
+          qty = maxQty;
+          message.append(variant.getString(Constants.Sku) + " change qty");
+        }
+      }
+    }
+    if (message.toString().contains("change")) {
+      Document change = new Document();
+      change.put(Constants.Id, variant.getLong(Constants.Id));
+      if (status.equals(Constants.In_Stock)) {
+        change.put(Constants.Inventory_Quantity, qty);
+        if (RequestsHandler.isPriceOkToChange(variant, price, currentPrice)) {
+          change.put(Constants.Price, price.toString());
+        }
+        change.put(Constants.Compare_At_Price, Double.valueOf(0d).toString());
+      } else {
+        change.put(Constants.Inventory_Quantity, 0);
+      }
+      Document pack = new Document();
+      pack.put(Constants.Variant, change);
+      message.insert(0, ", ");
+      message.insert(0, variant.getLong(Constants.Id));
+      System.out.println(message.toString());
+      int debug = 0;
+      GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+    } else {
+      System.out.println(message.toString());
+    }
+  }
+  private static List<String> messages = new ArrayList<>();
+
+  public static boolean isPriceOkToChange(Document variant, Double price, Double currentPrice) {
+    boolean retval = false;
+    if (price.doubleValue() >= currentPrice.doubleValue()) {
+      retval = true;
+    } else {
+      // Price decrease
+      double ratio = (currentPrice - price) / currentPrice;
+      if (ratio > 0.20) {
+        messages.add(String.format("Price change > %s, product %s %f to %f<br>", "20%",
+          variant.getString(Constants.Sku), currentPrice, price));
+        //RequestsHandler.notifyMessages();
+      } else {
+        retval = true;
+      }
+    }
+    return retval;
+  }
+
+  static {
+    System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));
+    System.getProperties().setProperty("mail.username", Utilities.getApplicationProperty("mail.username"));
+    System.getProperties().setProperty("mail.password", Utilities.getApplicationProperty("mail.password"));
+    System.getProperties().setProperty("mail.smtp.port", Utilities.getApplicationProperty("mail.smtp.port"));
+    System.getProperties().put("mail.smtp.auth", "true");
+    System.getProperties().put("mail.smtp.starttls.enable", "true");
+  }
+  
+  private static long lastSent = 0;
+  private static void notifyMessages() {
+    if (messages.size() == 0 || lastSent > System.currentTimeMillis()) return;
+    lastSent = System.currentTimeMillis() + (15*60*1000);
+    try {
+      StringBuilder mess = new StringBuilder();
+      messages.stream().forEach(mess::append);
+      messages.clear();
+      SendMail sendEmail = new SendMail("ricardo.teves@gotkcups.com", "ricardo.teves@gotkcups.com",
+        "ricardo.teves@gotkcups.com", "UpdatesProducts Notification", mess.toString());
+      sendEmail.send();
+    } catch (Exception ex1) {
+      Logger.getLogger(CheckHello.class.getName()).log(Level.SEVERE, null, ex1);
     }
   }
 }

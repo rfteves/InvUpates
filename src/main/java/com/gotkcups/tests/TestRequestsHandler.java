@@ -168,7 +168,6 @@ public class TestRequestsHandler {
         System.out.println(message.toString());
         int debug = 0;
         GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
-        Thread.sleep(1000);
       } else {
         System.out.println(message.toString());
       }

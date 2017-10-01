@@ -8,7 +8,7 @@ package com.gotkcups.adhoc;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
 import com.gotkcups.io.GateWay;
-import static com.gotkcups.page.DocumentProcessor.MARKUP_DISCOUNT;
+import com.gotkcups.page.DocumentProcessor;
 import static com.gotkcups.page.DocumentProcessor.MARKUP_NON_TAXABLE;
 import static com.gotkcups.page.DocumentProcessor.MARKUP_TAXABLE;
 import java.io.IOException;
@@ -37,13 +37,13 @@ public class ProfitCalculator {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,product_type,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = GateWay.getAllProducts("prod", params, 150, -11);
+    Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 9760556810L
-        || product.getLong("id") == 9760556810999l
-        || product.getLong("id") == 10078355570634l)) {
-        //continue;
+      if (!(product.getLong("id") == 52773027863L
+        || product.getLong("id") == 9760556810444999l
+        || product.getLong("id") == 10078355574440634l)) {
+        continue;
       }
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
@@ -63,8 +63,17 @@ public class ProfitCalculator {
       }
     }
     StringBuilder builder = new StringBuilder();
+    builder.append("id");
+    builder.append(SEPARATOR);
+    builder.append("description");
+    builder.append(SEPARATOR);
+    builder.append("profit");
+    builder.append(SEPARATOR);
+    builder.append("label");
+    System.out.println(builder.toString());
     for (Document variant : sorted) {
       Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document adwords = GateWay.getProductMetafieldsPloy(Constants.Production, variant.getLong(Constants.Product_Id));
       builder.setLength(0);
       builder.append("shopify_us_");
       builder.append(variant.getLong(Constants.Product_Id));
@@ -77,11 +86,12 @@ public class ProfitCalculator {
       double price = Double.parseDouble(variant.getString(Constants.Price));
       double cost = 0;
       if (taxable) {
-        cost = price * (MARKUP_TAXABLE);
+        cost = price * (MARKUP_TAXABLE + AVERAGE_TAX_RATE);
       } else {
         cost = price * MARKUP_NON_TAXABLE;
       }
       double defaultshipping = 0;
+      double discount = 0;
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
@@ -89,11 +99,16 @@ public class ProfitCalculator {
         if (vendor.containsKey(Constants.DefaultShipping)) {
           defaultshipping = vendor.getDouble(Constants.DefaultShipping);
         }
+        if (vendor.containsKey(Constants.Default_Min_Quantity) && vendor.getInteger(Constants.Default_Min_Quantity) >= 5 && price > 50) {
+          discount = vendor.getInteger(Constants.Default_Min_Quantity) * DocumentProcessor.BUNDLE_DISCOUNT;
+        }
       }
       cost -= defaultshipping;
-      // Estimated cost no tax
-      cost *= 1 + AVERAGE_TAX_RATE;
-      builder.append(price - cost);
+      cost += discount;
+      double profit = cost = Math.round((price - cost) * 100) * 0.01;
+      builder.append(profit);
+      builder.append(SEPARATOR);
+      builder.append(adwords.getString("custom_label_0"));
       System.out.println(builder.toString());
     }
   }

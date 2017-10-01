@@ -94,7 +94,7 @@ public class KeurigRewards {
       for (Element input : inputs) {
         if (input.attr("name").equals("productCodePost")) {
           anchor.setDataCode(input.attr("value"));
-        } else if (input.attr("name").equals("rPUnitPrice")) {//rPDisplayPrice
+        } else if (input.attr("name").equals("rPDisplayPrice")) {//rPUnitPrice
           anchor.setDataPrice(input.attr("value"));
         }
       }

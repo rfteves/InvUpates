@@ -7,10 +7,16 @@ package com.gotkcups.page;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.io.Utilities;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bson.Document;
 
@@ -32,10 +38,17 @@ public class SamsclubProcessor {
       int i = 0;
     }
     String s = (String) vendor.get("sku");
-    if (s.equals("822991S")) {
-      int debug = 0;
+    String sku = Utilities.trimSku(s);
+    if (sku.equals("980029309")) {
+      File location = new File("./980029309.html");
+      if (!location.exists()) {
+        try {
+          IOUtils.write(html.getBytes(), new FileOutputStream(location));
+        } catch (Exception ex) {
+          Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      }
     }
-    String sku = s.substring(0, s.length() - 1);
     String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
     String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
     if (html.contains("<div id=moneyBoxJson style=display:none>")) {

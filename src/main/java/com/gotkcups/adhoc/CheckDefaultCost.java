@@ -32,7 +32,7 @@ public class CheckDefaultCost {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = GateWay.getAllProducts("prod", params, 50, -1);
+    Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       if (!(product.getLong("id") == 59082047511L
@@ -54,8 +54,8 @@ public class CheckDefaultCost {
       }
     }
     for (Document variant : sorted) {
+      System.out.println("Querying " + variant.get("product_title"));
       Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
-      Thread.sleep(550);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);

@@ -180,6 +180,15 @@ public abstract class GateWay {
     sb.append(String.format("/admin/products/%d/metafields.json", productId));
     return RestHttpClient.processGet(sb.toString());
   }
+  
+  public static Document getProductMetafieldsPloy(String env, long productId) {
+    Document metas = null;
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
+    sb.append(String.format("/admin/products/%d/metafields.json", productId));
+    String json = RestHttpClient.processGet(sb.toString());
+    metas = productMetafields(json);
+    return metas;
+  }
 
   public static String updateVariant(String env, long variantId, String data) {
     String retval = null;
@@ -267,5 +276,13 @@ public abstract class GateWay {
     }
     GateWay.processParams(url, params);
     return RestHttpClient.processGet(url.toString());
+  }
+  
+  public static Document productMetafields(String metastr) {
+    Document meta = new Document();
+    List<Document> metafields = (List) Document.parse(metastr).get("metafields");
+    metafields.stream().forEach(kv -> meta.append(kv.getString("key"),
+      (kv.get("value") instanceof Integer) ? kv.getInteger("value").toString() : kv.getString("value")));
+    return meta;
   }
 }

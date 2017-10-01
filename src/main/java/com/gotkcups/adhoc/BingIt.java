@@ -107,12 +107,7 @@ public class BingIt {
     sb.append("custom_label_4");
     sb.append(NEW_LINE);
     for (Document product : products) {
-      String metastr = GateWay.getProductMetafields("prod", product.getLong("id"));
-      if (metastr == null) {
-        System.out.println(product.getLong("id"));
-        System.exit(0);
-      }
-      Document metas = metaploy(metastr);
+      Document metas = GateWay.getProductMetafieldsPloy("prod", product.getLong("id"));
       List<Document> variants = (List) product.get("variants");
       List<Document> options = (List) product.get("options");
       Document images = imageploy(product);
@@ -200,14 +195,6 @@ public class BingIt {
       }
     }
     return sb;
-  }
-
-  private static Document metaploy(String metastr) {
-    Document meta = new Document();
-    List<Document> metafields = (List) Document.parse(metastr).get("metafields");
-    metafields.stream().forEach(kv -> meta.append(kv.getString("key"),
-      (kv.get("value") instanceof Integer) ? kv.getInteger("value").toString() : kv.getString("value")));
-    return meta;
   }
 
   private static Document imageploy(Document product) {

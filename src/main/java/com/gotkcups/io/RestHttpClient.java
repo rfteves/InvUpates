@@ -5,7 +5,11 @@
  */
 package com.gotkcups.io;
 
+import com.gotkcups.forms.Login;
+import java.util.Date;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -25,28 +29,39 @@ import org.apache.http.impl.client.HttpClientBuilder;
 public class RestHttpClient {
 
   
-  public final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0";
-  
+  public final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
 
+  private static Login login = new Login();
   public static String processGetHtml(String url) {
+    String html = null;
+    try {
+      html = login.sendGet(url);
+    } catch (Exception ex) {
+      Logger.getLogger(RestHttpClient.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+      return html;
+    }
+  }
+  public static String processGetHtmlx(String url) {
     Scanner in = null;
     StringBuilder sb = new StringBuilder("Severe Error\r\n\r\n\r\n");
     try {
       HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpGet getRequest = new HttpGet(url);
+      HttpGet request = new HttpGet(url);
       RequestConfig globalConfig = RequestConfig.custom()
         .setCookieSpec(CookieSpecs.DEFAULT)
         .build();
       RequestConfig localConfig = RequestConfig.copy(globalConfig)
         .setCookieSpec(CookieSpecs.STANDARD_STRICT)
         .build();
-      getRequest.setConfig(localConfig);
-      getRequest.addHeader("Content-Type", "text/html;charset=UTF-8");
-      getRequest.addHeader("Accept", "text/html;charset=UTF-8");
-      String edge = "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev> Edge/<EdgeHTML Rev>.<Windows Build>";
-      edge = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
-      getRequest.addHeader("User-Agent", edge);
-      HttpResponse response = httpClient.execute(getRequest);
+      request.setConfig(localConfig);
+      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
+      request.addHeader("Content-Type", "text/html;charset=UTF-8");
+      request.addHeader("Accept", "text/html;charset=UTF-8");
+      //String edge = "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev> Edge/<EdgeHTML Rev>.<Windows Build>";
+      //edge = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
+      //getRequest.addHeader("User-Agent", edge);
+      HttpResponse response = httpClient.execute(request);
       in = new Scanner(response.getEntity().getContent());
       sb.setLength(0);
       while (in.hasNext()) {
@@ -68,16 +83,32 @@ public class RestHttpClient {
     }
   }
 
+  private static long lastGet = 0;
+  
+  private static void throttle() {
+    while (lastGet > System.currentTimeMillis()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+        Logger.getLogger(RestHttpClient.class.getName()).log(Level.SEVERE, null, ex);
+      }
+    }
+    lastGet = System.currentTimeMillis() + 1350;
+    System.out.println("granted" + new Date());
+  }
+  
   public static String processGet(String url) {
     String json = null;
     Scanner in = null;
     try {
       StringBuilder sb = new StringBuilder();
       HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpGet getRequest = new HttpGet(url);
-      getRequest.addHeader("Content-Type", "application/json;charset=UTF-8");
-      getRequest.addHeader("Accept", "application/json;charset=UTF-8");
-      HttpResponse response = httpClient.execute(getRequest);
+      HttpGet request = new HttpGet(url);
+      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
+      request.addHeader("Content-Type", "application/json;charset=UTF-8");
+      request.addHeader("Accept", "application/json;charset=UTF-8");
+      throttle();
+      HttpResponse response = httpClient.execute(request);
       in = new Scanner(response.getEntity().getContent());
       while (in.hasNext()) {
         sb.append(in.nextLine());
@@ -104,12 +135,14 @@ public class RestHttpClient {
     try {
       StringBuilder sb = new StringBuilder();
       HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpPut putRequest = new HttpPut(url);
-      putRequest.addHeader("Content-Type", "application/json;charset=UTF-8");
-      putRequest.addHeader("Accept", "application/json;charset=UTF-8");
+      HttpPut request = new HttpPut(url);
+      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
+      request.addHeader("Content-Type", "application/json;charset=UTF-8");
+      request.addHeader("Accept", "application/json;charset=UTF-8");
       StringEntity input = new StringEntity(Utilities.clean(data));
-      putRequest.setEntity(input);
-      HttpResponse response = httpClient.execute(putRequest);
+      request.setEntity(input);
+      throttle();
+      HttpResponse response = httpClient.execute(request);
       in = new Scanner(response.getEntity().getContent());
       while (in.hasNext()) {
         sb.append(in.nextLine());
@@ -136,13 +169,15 @@ public class RestHttpClient {
     try {
       StringBuilder sb = new StringBuilder();
       HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpPost postRequest = new HttpPost(url);
-      postRequest.addHeader("Content-Type", "application/json;charset=UTF-8");
-      postRequest.addHeader("Accept", "application/json;charset=UTF-8");
+      HttpPost request = new HttpPost(url);
+      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
+      request.addHeader("Content-Type", "application/json;charset=UTF-8");
+      request.addHeader("Accept", "application/json;charset=UTF-8");
       String jsondata = data.toString();
       StringEntity input = new StringEntity(jsondata);
-      postRequest.setEntity(input);
-      HttpResponse response = httpClient.execute(postRequest);
+      request.setEntity(input);
+      throttle();
+      HttpResponse response = httpClient.execute(request);
       in = new Scanner(response.getEntity().getContent());
       while (in.hasNext()) {
         sb.append(in.nextLine());
@@ -167,10 +202,12 @@ public class RestHttpClient {
     try {
       StringBuilder sb = new StringBuilder();
       HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpDelete deleteRequest = new HttpDelete(url);
-      deleteRequest.addHeader("Content-Type", "application/json;charset=UTF-8");
-      deleteRequest.addHeader("Accept", "application/json;charset=UTF-8");
-      HttpResponse response = httpClient.execute(deleteRequest);
+      HttpDelete request = new HttpDelete(url);
+      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
+      request.addHeader("Content-Type", "application/json;charset=UTF-8");
+      request.addHeader("Accept", "application/json;charset=UTF-8");
+      throttle();
+      HttpResponse response = httpClient.execute(request);
       in = new Scanner(response.getEntity().getContent());
       while (in.hasNext()) {
         sb.append(in.nextLine());

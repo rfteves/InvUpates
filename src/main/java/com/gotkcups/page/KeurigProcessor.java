@@ -8,16 +8,8 @@ package com.gotkcups.page;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.KeurigAnchor;
 import com.gotkcups.data.KeurigSelect;
-import com.gotkcups.data.KeurigSpan;
 import com.gotkcups.io.Utilities;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.bson.Document;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  *
@@ -55,9 +47,6 @@ public class KeurigProcessor {
           product.put(Constants.Discounted, false);
           double cost = Double.parseDouble(o.getDataPrice().substring(1));
           cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BEVERAGES)) * 100) * 0.01;
-          if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
-            cost = product.getDouble(Constants.Default_Cost);
-          }
           product.put(Constants.Final_Cost, cost);
           double shipping = retrieveShipping(product);
           product.put(Constants.Shipping, shipping);
@@ -69,92 +58,18 @@ public class KeurigProcessor {
       });
     } else if (url.contains("/Brewers") || url.contains("/Coffee-Makers")) {
       String s = (String) product.get("sku");
-      String sku = trimSku(s);
+      String sku = Utilities.trimSku(s);
       KeurigAnchor anchor = KeurigRewards.getKeurigAnchor(sku);
       if (anchor != null && anchor.getDataPurchasable().equalsIgnoreCase("true")) {
         product.put(Constants.Status, Constants.In_Stock);
         product.put(Constants.Discounted, false);
         double cost = Double.parseDouble(anchor.getDataPrice());
-        cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BREWERS)) * 100) * 0.01;
-        if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
-          cost = product.getDouble(Constants.Default_Cost);
-        }
         product.put(Constants.Final_Cost, cost);
         double shipping = retrieveShipping(product);
         product.put(Constants.Shipping, shipping);
         product.put(Constants.Min_Quantity, 1);
       } else {
         product.put(Constants.Status, Constants.Out_Of_Stock);
-      }
-    } else if (url.contains("/Brewers") && html.contains("<span class=\"custom-color-swatch\">")) {
-      KeurigSpan span = null;
-      org.jsoup.nodes.Document doc = Jsoup.parse(html);
-      if (doc.getElementsByClass("custom-color-swatch").size() == 1) {
-        span = new KeurigSpan();
-        Element swatch = doc.getElementsByClass("custom-color-swatch").get(0);
-        if (swatch.getElementsByTag("a").size() != 0) {
-          final List<KeurigAnchor> ancs = new ArrayList<>();
-          span.setAnchor(ancs);
-          Elements anchors = swatch.getElementsByTag("a");
-          anchors.stream().forEach(element -> {
-            KeurigAnchor ka = new KeurigAnchor();
-            ka.setDataColorPickerName(element.attr("data-color-picker-name"));
-            ka.setDataCode(element.attr("data-swatch-color"));
-            ka.setDataPrice(element.attr("data-price"));
-            ka.setDataPurchasable(element.attr("data-purchasable"));
-            ancs.add(ka);
-          });
-        }
-      } else {
-        int start = html.indexOf("<span class=\"custom-color-swatch\">");
-        int end = html.indexOf("</span>", start) + 7;
-        String opts = html.substring(start, end).replaceAll("[\t\r\n]", " ").replaceAll("[\"]{2}", "\"\" ").replaceAll("[ ]{2,}", " ");
-        int select = 0;
-        sb.setLength(0);
-        sb.append("<span>");
-        while ((start = opts.indexOf("<a ", select)) != -1) {
-          end = opts.indexOf("/a>", start) + 3;
-          sb.append(opts.substring(start, end));
-          select = end;
-        }
-        sb.append("</span>");
-        span = (KeurigSpan) Utilities.objectify(sb.toString(), new KeurigSpan());
-      }
-      span.getAnchor().stream().filter(o -> product.getString("sku").startsWith(o.getDataCode().concat("K"))).forEach(o -> {
-        if (o.getDataPurchasable().equalsIgnoreCase("true")) {
-          product.put(Constants.Status, Constants.In_Stock);
-          product.put(Constants.Discounted, false);
-          double cost = Double.parseDouble(o.getDataPrice().substring(1));
-          cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BREWERS)) * 100) * 0.01;
-          if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
-            cost = product.getDouble(Constants.Default_Cost);
-          }
-          product.put(Constants.Final_Cost, cost);
-          double shipping = retrieveShipping(product);
-          product.put(Constants.Shipping, shipping);
-          product.put(Constants.Min_Quantity, 1);
-        } else {
-          product.put(Constants.Status, Constants.Out_Of_Stock);
-        }
-      });
-    } else if (url.contains("/Coffee-Makers") && html.contains("<div class=\"in-stock\"")
-      && html.contains("<button id=\"addToCartButton\" type=\"submit\"")) {
-      product.put(Constants.Status, Constants.In_Stock);
-      product.put(Constants.Discounted, false);
-      Matcher m = Pattern.compile("<div class=\"big-price left\">[\r\n\t ]+\\$[0-9]{1,}.[0-9]{2}</div>").matcher(html);
-      if (m.find()) {
-        m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(m.group());
-        if (m.find()) {
-          double cost = Double.parseDouble(m.group());
-          cost = Math.round((cost * (1 - KEURIG_DISCOUNT_BREWERS)) * 100) * 0.01;
-          if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
-            cost = product.getDouble(Constants.Default_Cost);
-          }
-          product.put(Constants.Final_Cost, cost);
-          double shipping = retrieveShipping(product);
-          product.put(Constants.Shipping, shipping);
-          product.put(Constants.Min_Quantity, 1);
-        }
       }
     } else {
       product.put(Constants.Status, Constants.Product_Not_Found);
@@ -178,12 +93,5 @@ public class KeurigProcessor {
     }
   }
   private final static StringBuilder sb = new StringBuilder();
-  
-  
-  public static String trimSku(String sku) {
-    while (sku.toLowerCase().charAt(sku.length() -1) >= 'a' && sku.toLowerCase().charAt(sku.length() -1) <= 'z' ) {
-      sku = sku.substring(0, sku.length() - 1);
-    }
-    return sku;
-  }
+
 }

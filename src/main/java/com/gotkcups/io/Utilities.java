@@ -270,4 +270,11 @@ public class Utilities {
     }
     return source;
   }
+  
+  public static String trimSku(String sku) {
+    while (sku.toLowerCase().charAt(sku.length() -1) >= 'a' && sku.toLowerCase().charAt(sku.length() -1) <= 'z' ) {
+      sku = sku.substring(0, sku.length() - 1);
+    }
+    return sku;
+  }
 }

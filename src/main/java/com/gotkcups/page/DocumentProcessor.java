@@ -59,11 +59,6 @@ public class DocumentProcessor extends Thread {
   }
 
   private static String fetchPage(String url) {
-    try {
-      Thread.sleep(500);
-    } catch (InterruptedException ex) {
-      Logger.getLogger(DocumentProcessor.class.getName()).log(Level.SEVERE, null, ex);
-    }
     String html = null;
     int trials = 3;
     while (html == null && trials-- > 0) {
@@ -106,7 +101,7 @@ public class DocumentProcessor extends Thread {
     double price = cost * minqty;
     price += shipping;
     if (minqty >= 5 && price > 50) {
-      price -= minqty * 0.75;
+      price -= minqty * DocumentProcessor.BUNDLE_DISCOUNT;
     }
     if (taxable) {
       price /= (MARKUP_TAXABLE - (discounted ? MARKUP_DISCOUNT : 0.0));
@@ -128,4 +123,6 @@ public class DocumentProcessor extends Thread {
   public static boolean isProcessing() {
     return processing;
   }
+  
+  public static final double BUNDLE_DISCOUNT = 0.75;
 }
