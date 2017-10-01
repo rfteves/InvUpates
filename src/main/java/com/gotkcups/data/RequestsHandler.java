@@ -47,6 +47,8 @@ public class RequestsHandler extends Thread {
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
+        values.append("debug", product.get("debug"));
+        values.append("debug-id", product.getLong(Constants.Id));
         variant.put("results", values);
         register(values);
       }
@@ -82,10 +84,15 @@ public class RequestsHandler extends Thread {
   private static StringBuilder message = new StringBuilder();
 
   public static void register(long id) {
+    register(id, false);
+  }
+
+  public static void register(long id, boolean debug) {
     log.info("Register product " + id);
     String json = GateWay.getProduct(Constants.Production, id);
     Document result = Document.parse(json);
     Document product = (Document) result.get(Constants.Product);
+    product.append("debug", debug);
     registerProduct(product);
   }
 
@@ -237,11 +244,14 @@ public class RequestsHandler extends Thread {
     System.getProperties().put("mail.smtp.auth", "true");
     System.getProperties().put("mail.smtp.starttls.enable", "true");
   }
-  
+
   private static long lastSent = 0;
+
   private static void notifyMessages() {
-    if (messages.size() == 0 || lastSent > System.currentTimeMillis()) return;
-    lastSent = System.currentTimeMillis() + (15*60*1000);
+    if (messages.size() == 0 || lastSent > System.currentTimeMillis()) {
+      return;
+    }
+    lastSent = System.currentTimeMillis() + (15 * 60 * 1000);
     try {
       StringBuilder mess = new StringBuilder();
       messages.stream().forEach(mess::append);

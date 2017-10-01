@@ -39,16 +39,6 @@ public class SamsclubProcessor {
     }
     String s = (String) vendor.get("sku");
     String sku = Utilities.trimSku(s);
-    if (sku.equals("980029309")) {
-      File location = new File("./980029309.html");
-      if (!location.exists()) {
-        try {
-          IOUtils.write(html.getBytes(), new FileOutputStream(location));
-        } catch (Exception ex) {
-          Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-      }
-    }
     String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
     String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
     if (html.contains("<div id=moneyBoxJson style=display:none>")) {
@@ -59,18 +49,18 @@ public class SamsclubProcessor {
       Document mbj = Document.parse(pad.toString());
       List<Document> availableSkus = (List) mbj.get("availableSKUs");
       vendor.put(Constants.Status, Constants.Out_Of_Stock);
-      availableSkus.stream().filter(available -> available.getString("itemNo").equals(sku) &&
-        available.containsKey("onlineInventoryVO")).forEach(available -> {
-          Document onlineInv = (Document) available.get("onlineInventoryVO");
-          Document onlinePrice = (Document) available.get("onlinePriceVO");
-          if (onlineInv == null || onlinePrice == null) {
-            int debug = 0;
-          }
-          vendor.put(Constants.Status, "inStock".equals(onlineInv.getString("status")) ? Constants.In_Stock : Constants.Out_Of_Stock);
-          vendor.put(Constants.Final_Cost, onlinePrice.getDouble("finalPrice"));
-          vendor.put(Constants.List_Cost, onlinePrice.getDouble("listPrice"));
-          double shipping = retrieveShipping(vendor, html);
-          vendor.put(Constants.Shipping, shipping);
+      availableSkus.stream().filter(available -> available.getString("itemNo").equals(sku)
+        && available.containsKey("onlineInventoryVO")).forEach(available -> {
+        Document onlineInv = (Document) available.get("onlineInventoryVO");
+        Document onlinePrice = (Document) available.get("onlinePriceVO");
+        if (onlineInv == null || onlinePrice == null) {
+          int debug = 0;
+        }
+        vendor.put(Constants.Status, "inStock".equals(onlineInv.getString("status")) ? Constants.In_Stock : Constants.Out_Of_Stock);
+        vendor.put(Constants.Final_Cost, onlinePrice.getDouble("finalPrice"));
+        vendor.put(Constants.List_Cost, onlinePrice.getDouble("listPrice"));
+        double shipping = retrieveShipping(vendor, html);
+        vendor.put(Constants.Shipping, shipping);
       });
     } else if (html.contains(id)) {
       if (html.contains("<link itemprop=availability href=\"http://schema.org/InStock\"/>")
@@ -100,7 +90,7 @@ public class SamsclubProcessor {
       vendor.put(Constants.Status, Constants.Product_Not_Found);
     }
     if (!vendor.containsKey(Constants.Status)) {
-      int debug =0;
+      int debug = 0;
     }
     if (vendor.getString(Constants.Status).equals(Constants.In_Stock)
       && (vendor.getDouble(Constants.Final_Cost) == null || vendor.getDouble(Constants.Final_Cost) <= 0)) {
@@ -114,7 +104,7 @@ public class SamsclubProcessor {
     double cost = vendor.getDouble(Constants.Final_Cost);
     if (vendor.getDouble(Constants.Shipping) == 0 && cost < 50) {
       cost *= 1.04;
-    } else if ( cost < 50) {
+    } else if (cost < 50) {
       cost *= 1.02;
     }
     if (vendor.getDouble(Constants.Shipping) == null) {
@@ -145,40 +135,27 @@ public class SamsclubProcessor {
       }
     }
     if (retval == -1) {
-      // It's probably in two places
-      String[] pats = {"<span class=price>[0-9]{1,}</span>", "<span class=superscript>[0-9]{2}</span>"};
-      for (String pattern : pats) {
-        Matcher m = Pattern.compile(pattern).matcher(html);
-        if (m.find()) {
-          m = Pattern.compile("[0-9]{1,}").matcher(m.group());
+      String[][] patts = {{"<span class=price>[0-9]{1,}</span>", "<span class=superscript>[0-9]{2}</span>"},
+      {"<span class=Price-characteristic>[0-9]{1,}</span>", "<span class=Price-mantissa>[0-9]{2}</span>"},
+      {"<span aria-hidden=true class=Price-characteristic>[0-9]{1,}</span>", "<span aria-hidden=true class=Price-mantissa>[0-9]{2}</span>"}};
+      for (String[] pats : patts) {
+        for (String pattern : pats) {
+          Matcher m = Pattern.compile(pattern).matcher(html);
           if (m.find()) {
-            double r = Double.parseDouble(m.group());
-            if (retval == -1) {
-              retval = r;
-            } else {
-              retval += r / 100;
+            m = Pattern.compile("[0-9]{1,}").matcher(m.group());
+            if (m.find()) {
+              double r = Double.parseDouble(m.group());
+              if (retval == -1) {
+                retval = r;
+              } else {
+                retval += r / 100;
+              }
+              break;
             }
-            break;
           }
         }
-      }
-    }
-    if (retval == -1) {
-      // It's probably in other two places
-      String[] pats = {"<span class=Price-characteristic>[0-9]{1,}</span>", "<span class=Price-mantissa>[0-9]{2}</span>"};
-      for (String pattern : pats) {
-        Matcher m = Pattern.compile(pattern).matcher(html);
-        if (m.find()) {
-          m = Pattern.compile("[0-9]{1,}").matcher(m.group());
-          if (m.find()) {
-            double r = Double.parseDouble(m.group());
-            if (retval == -1) {
-              retval = r;
-            } else {
-              retval += r / 100;
-            }
-            break;
-          }
+        if (retval != -1) {
+          break;
         }
       }
     }

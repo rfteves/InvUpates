@@ -34,7 +34,9 @@ import org.apache.commons.logging.LogFactory;
 @RestController
 @RequestMapping("/")
 public class InventoryController {
+
   private final static Log log = LogFactory.getLog(InventoryController.class);
+
   /*@RequestMapping(method = GET)
   public List<Object> list() {
     return null;
@@ -81,6 +83,18 @@ public class InventoryController {
     if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 2)) {
       RequestsHandler.register(id);
     }
+    return product;
+  }
+
+  @RequestMapping("/{id}.debug")
+  public Document debug(@PathVariable Long id) {
+    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+      .getRequest();
+    Document product = new Document();
+    Document _id = new Document();
+    _id.put(Constants.Product_Id, id);
+    _id.put(Constants.Remote_Host, request.getRemoteHost());
+    RequestsHandler.register(id, true);
     return product;
   }
 

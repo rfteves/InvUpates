@@ -12,6 +12,8 @@ import com.gotkcups.page.DocumentProcessor;
 import static com.gotkcups.page.DocumentProcessor.MARKUP_NON_TAXABLE;
 import static com.gotkcups.page.DocumentProcessor.MARKUP_TAXABLE;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +42,9 @@ public class ProfitCalculator {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 52773027863L
-        || product.getLong("id") == 9760556810444999l
-        || product.getLong("id") == 10078355574440634l)) {
+      if (!(product.getLong("id") == 9746198410L
+        || product.getLong("id") == 155550127938378l
+        || product.getLong("id") == 101358555503082l)) {
         continue;
       }
       List<Document> variants = (List) product.get("variants");
@@ -80,7 +82,7 @@ public class ProfitCalculator {
       builder.append("_");
       builder.append(variant.getLong(Constants.Id));
       builder.append(SEPARATOR);
-      builder.append(variant.getString(Constants.Title));
+      builder.append(variant.getString(Constants.Title).replaceAll(",", ""));
       builder.append(SEPARATOR);
       boolean taxable = !variant.getBoolean("taxable");
       double price = Double.parseDouble(variant.getString(Constants.Price));
@@ -105,8 +107,8 @@ public class ProfitCalculator {
       }
       cost -= defaultshipping;
       cost += discount;
-      double profit = cost = Math.round((price - cost) * 100) * 0.01;
-      builder.append(profit);
+      double profit = Math.round((price - cost) * 100) * 0.01;
+      builder.append(BigDecimal.valueOf(profit).setScale(2, RoundingMode.HALF_UP));
       builder.append(SEPARATOR);
       builder.append(adwords.getString("custom_label_0"));
       System.out.println(builder.toString());

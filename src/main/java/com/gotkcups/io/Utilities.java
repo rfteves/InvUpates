@@ -231,12 +231,16 @@ public class Utilities {
   }
 
   public static void waitForStatus(Document vendor) {
+    int trials = 0;
     while (true) {
+      ++trials;
       if (vendor.containsKey(Constants.Status) && !vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
         break;
       } else if (vendor.containsKey(Constants.Status) && vendor.getString(Constants.Status).equals(Constants.In_Stock) &&
         vendor.containsKey(Constants.Final_Price)) {
         break;
+      } else if (trials > 10) {
+        System.out.println("waiting status break after 10 tries" + vendor.getString(Constants.Sku));
       } else {
         try {
           Thread.sleep(1000);

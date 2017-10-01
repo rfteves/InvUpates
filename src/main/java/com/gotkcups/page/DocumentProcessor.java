@@ -7,6 +7,8 @@ package com.gotkcups.page;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.io.RestHttpClient;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
@@ -51,6 +54,17 @@ public class DocumentProcessor extends Thread {
       if (html == null || html.startsWith("Severe Error")) {
         vendor.put(Constants.Status, Constants.Page_Not_Available);
       } else {
+        if (vendors.getBoolean("debug").booleanValue()) {
+          File location = new File(String.format("%s.html", "" + vendors.getLong("debug-id")));
+          if (!location.exists()) {
+            try {
+              IOUtils.write(html.getBytes(), new FileOutputStream(location));
+              System.out.println("Writing file for debug " + location.getCanonicalPath());
+            } catch (Exception ex) {
+              Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+          }
+        }
         fetchCost(vendor, key, urls.get(key));
         calculatePrice(vendor);
       }
@@ -109,7 +123,7 @@ public class DocumentProcessor extends Thread {
       price /= (MARKUP_NON_TAXABLE - (discounted ? MARKUP_DISCOUNT : 0.0));
     }
     price = Math.floor(price);
-    if (price> 100) {
+    if (price > 100) {
       price -= 0.02;
     } else {
       price += 0.98;
@@ -123,6 +137,6 @@ public class DocumentProcessor extends Thread {
   public static boolean isProcessing() {
     return processing;
   }
-  
-  public static final double BUNDLE_DISCOUNT = 0.75;
+
+  public static final double BUNDLE_DISCOUNT = 0.4;
 }

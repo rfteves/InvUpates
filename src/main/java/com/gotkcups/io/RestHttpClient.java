@@ -94,7 +94,7 @@ public class RestHttpClient {
       }
     }
     lastGet = System.currentTimeMillis() + 1350;
-    System.out.println("granted" + new Date());
+    //System.out.println("granted" + new Date());
   }
   
   public static String processGet(String url) {
