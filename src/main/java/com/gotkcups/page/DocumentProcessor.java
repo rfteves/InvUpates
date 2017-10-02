@@ -49,7 +49,7 @@ public class DocumentProcessor extends Thread {
     } else {
       html = urls.get(key);
     }
-    //log.info(String.format("DocProcessing %s %s", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
+    log.info(String.format("DocProcessing %s %s", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
     if (html == null || html.startsWith("Severe Error")) {
       variant.put(Constants.Status, Constants.Page_Not_Available);
     } else {
@@ -67,7 +67,7 @@ public class DocumentProcessor extends Thread {
       fetchCost(variant, key, urls.get(key));
       calculatePrice(variant);
     }
-    //log.info(String.format("DocProcessing %s %s done", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
+    log.info(String.format("DocProcessing %s %s done", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
   }
 
   private static String fetchPage(String url) {

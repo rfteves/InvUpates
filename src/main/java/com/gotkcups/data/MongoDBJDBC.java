@@ -184,7 +184,7 @@ public class MongoDBJDBC {
   }
 
   public static UpdateResult updateVariantIP(Document variant, StringBuilder message) {
-    //log.debug("Updating variant id " + variant.get(Constants.Id));
+    log.debug("Updating variant id " + variant.get(Constants.Id));
     UpdateResult result = null;
     try {
       MongoDatabase database = getDatabase(Constants.Table_GotKcups);
@@ -199,7 +199,7 @@ public class MongoDBJDBC {
     } catch (Exception ex) {
       ex.printStackTrace();
     } finally {
-      //log.debug("Updating done, variant id " + variant.get(Constants.Id));
+      log.debug("Updating done, variant id " + variant.get(Constants.Id));
       return result;
     }
   }

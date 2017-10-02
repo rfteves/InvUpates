@@ -73,7 +73,7 @@ public class RequestsHandler extends Thread {
       }
       RequestsHandler.updateVariant(status, currentStatus, price, currentPrice, variant);
       MongoDBJDBC.updateVariantIP(variant, message);
-      //log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Product_Id), message.toString()));
+      log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Product_Id), message.toString()));
     }
   }
   private final static int MAX_PURCHASE = 11500;
@@ -84,7 +84,7 @@ public class RequestsHandler extends Thread {
   }
 
   public static void register(long id, boolean debug) {
-    //log.info("Register product " + id);
+    log.info("Register product " + id);
     String json = GateWay.getProduct(Constants.Production, id);
     Document result = Document.parse(json);
     Document product = (Document) result.get(Constants.Product);
@@ -207,9 +207,9 @@ public class RequestsHandler extends Thread {
       message.insert(0, variant.getLong(Constants.Id));
       System.out.println(message.toString());
       int debug = 0;
-      //GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+      GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
     } else {
-      //System.out.println(message.toString());
+      System.out.println(message.toString());
     }
   }
   private static List<String> messages = new ArrayList<>();
@@ -224,7 +224,7 @@ public class RequestsHandler extends Thread {
       if (ratio > 0.20) {
         messages.add(String.format("Price change > %s, product %s %f to %f<br>", "20%",
           variant.getString(Constants.Sku), currentPrice, price));
-        //RequestsHandler.notifyMessages();
+        RequestsHandler.notifyMessages();
       } else {
         retval = true;
       }
