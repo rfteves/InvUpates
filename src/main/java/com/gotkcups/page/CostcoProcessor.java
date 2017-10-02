@@ -27,8 +27,8 @@ import org.jsoup.select.Elements;
  */
 public class CostcoProcessor {
 
-  public static void costing(Document vendor, String html) {
-    dig(vendor, html);
+  public static void costing(Document variant, String html) {
+    dig(variant, html);
   }
 
   public static void dig(Document vendor, String html) {
@@ -43,7 +43,7 @@ public class CostcoProcessor {
     initProductOptions(vendor, html);
     String s = (String) vendor.get("sku");
     if (s.equals("1074897C")) {
-      int b=0;
+      int b = 0;
     }
     String sku = s.substring(0, s.length() - 1);
     Document products = (Document) vendor.get(Constants.Costco_Products);
@@ -66,43 +66,40 @@ public class CostcoProcessor {
     vendor.remove(Constants.Costco_Products);
   }
 
-  private static void initProduct(Document vendor, Document product, String html) {
+  private static void initProduct(Document variant, Document product, String html) {
     if (!product.getString("inventory").equalsIgnoreCase("IN_STOCK")) {
-      vendor.put(Constants.Status, Constants.Out_Of_Stock);
+      variant.put(Constants.Status, Constants.Out_Of_Stock);
       return;
     } else if (Double.parseDouble(product.getString("ordinal")) <= 20) {
-      vendor.put(Constants.Status, Constants.Out_Of_Stock);
+      variant.put(Constants.Status, Constants.Out_Of_Stock);
       return;
     }
-    vendor.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
-    vendor.put(Constants.Status, Constants.In_Stock);
+    variant.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
+    variant.put(Constants.Status, Constants.In_Stock);
     if (product.getString("listPrice") != null) {
       String str = product.getString("listPrice");
-      vendor.put(Constants.List_Cost, Double.parseDouble(Base64Coder.decode(str)));
+      variant.put(Constants.List_Cost, Double.parseDouble(Base64Coder.decode(str)));
     }
     if (product.getString("price") != null) {
       String str = product.getString("price");
       double cost = Double.parseDouble(Base64Coder.decode(str));
-      if (product.containsKey(Constants.Default_Cost) && product.getDouble(Constants.Default_Cost) > 0) {
-        cost = product.getDouble(Constants.Default_Cost);
-      }
-      vendor.put(Constants.Final_Cost, cost);
+      variant.put(Constants.Final_Cost, cost);
     }
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
-    if (vendor.getDouble(Constants.List_Cost) == -1) {
+    if (variant.getDouble(Constants.List_Cost) == -1) {
       Elements elements = doc.getElementsByClass("online-price");
-      for (Element element: elements) {
+      for (Element element : elements) {
         if (element.attr("data-catentry").equals(product.getString("catentry"))) {
           int k = 0;
           String str = element.attr("data-opvalue");
           double cost = Double.parseDouble(Base64Coder.decode(str));
-          vendor.put(Constants.List_Cost, cost);
+          variant.put(Constants.List_Cost, cost);
         }
       }
     }
     boolean expired = true;
-    if (doc.getElementsByClass("PromotionalText").size() ==1 &&
-      !doc.getElementsByClass("PromotionalText").get(0).text().contains("Limit ")) {
+    if (doc.getElementsByClass("PromotionalText").size() == 1
+      && !doc.getElementsByClass("PromotionalText").get(0).text().contains("Limit ")) {
       int start = html.indexOf("<p class=\"PromotionalText\">") + "<p class=\"PromotionalText\">".length();
       int end = html.indexOf("</p>", start);
       String str = html.substring(start, end);
@@ -122,12 +119,15 @@ public class CostcoProcessor {
         }
       }
     }
-    vendor.put(Constants.Discounted, !expired);
+    variant.put(Constants.Discounted, !expired);
     if (expired) {
-      vendor.put(Constants.Final_Cost, vendor.get(Constants.List_Cost));
+      variant.put(Constants.Final_Cost, variant.get(Constants.List_Cost));
     }
-    int qty = retrieveMinimumQuantity(vendor, html);
-    vendor.put(Constants.Min_Quantity, qty);
+    if (((Document)variant.get("vendor")).containsKey(Constants.ExtraCost)) {
+      variant.put(Constants.ExtraCost, ((Document)variant.get("vendor")).get(Constants.ExtraCost));
+    }
+    int qty = retrieveMinimumQuantity(variant, html);
+    variant.put(Constants.Min_Quantity, qty);
     int start = html.indexOf("<p id=\"shipping-statement\">");
     int end = html.indexOf("</p>", start);
     double shipping = 0;
@@ -137,25 +137,16 @@ public class CostcoProcessor {
       if (m.find()) {
         String group = m.group();
         if (group.equals("0:00") || group.equals("0.00")) {
-          initShipping(vendor);
+          variant.put(Constants.Shipping, 0d);
         } else {
           shipping = Double.parseDouble(m.group());
-          vendor.put(Constants.Shipping, shipping);
+          variant.put(Constants.Shipping, shipping);
         }
       } else {
-        initShipping(vendor);
+        variant.put(Constants.Shipping, 0d);
       }
     } else {
-      initShipping(vendor);
-    }
-  }
-
-  private static void initShipping(Document vendor) {
-    // DefaultShipping trumps shipping unless
-    if (!vendor.containsKey(Constants.Default_Shipping) || vendor.getDouble(Constants.Default_Shipping) == 0) {
-      vendor.put(Constants.Shipping, 0d);
-    } else {
-      vendor.put(Constants.Shipping, vendor.getDouble(Constants.Default_Shipping));
+      variant.put(Constants.Shipping, 0d);
     }
   }
 

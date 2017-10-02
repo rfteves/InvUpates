@@ -36,40 +36,38 @@ public class DocumentProcessor extends Thread {
     processing = false;
   }
 
-  private static void process(Map<String, String> urls, Document vendors) {
-    List<Document> obj = (List) vendors.get("vendors");
-    obj.stream().forEach(vendor -> {
-      //System.out.println("Start processing " + vendor.getString(Constants.Sku));
-      String key = (String) vendor.get("url");
-      String html = null;
-      if (!key.toLowerCase().startsWith("http")) {
-        System.out.println("Undefined url " + vendor.getString(Constants.Sku));
-      } else if (!urls.containsKey(key)) {
-        html = fetchPage(key);
-        urls.put(key, html);
-      } else {
-        html = urls.get(key);
-      }
-      log.info(String.format("DocProcessing %s %s", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
-      if (html == null || html.startsWith("Severe Error")) {
-        vendor.put(Constants.Status, Constants.Page_Not_Available);
-      } else {
-        if (vendors.getBoolean("debug").booleanValue()) {
-          File location = new File(String.format("%s.html", "" + vendors.getLong("debug-id")));
-          if (!location.exists()) {
-            try {
-              IOUtils.write(html.getBytes(), new FileOutputStream(location));
-              System.out.println("Writing file for debug " + location.getCanonicalPath());
-            } catch (Exception ex) {
-              Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
-            }
+  private static void process(Map<String, String> urls, Document variant) {
+    Document vendori = (Document) variant.get("vendor");
+    //System.out.println("Start processing " + vendor.getString(Constants.Sku));
+    String key = (String) vendori.get("url");
+    String html = null;
+    if (!key.toLowerCase().startsWith("http")) {
+      System.out.println("Undefined url " + variant.getString(Constants.Sku));
+    } else if (!urls.containsKey(key)) {
+      html = fetchPage(key);
+      urls.put(key, html);
+    } else {
+      html = urls.get(key);
+    }
+    //log.info(String.format("DocProcessing %s %s", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
+    if (html == null || html.startsWith("Severe Error")) {
+      variant.put(Constants.Status, Constants.Page_Not_Available);
+    } else {
+      if (variant.getBoolean("debug").booleanValue()) {
+        File location = new File(String.format("%s.html", "" + variant.getLong("debug-id")));
+        if (!location.exists()) {
+          try {
+            IOUtils.write(html.getBytes(), new FileOutputStream(location));
+            System.out.println("Writing file for debug " + location.getCanonicalPath());
+          } catch (Exception ex) {
+            Logger.getLogger(SamsclubProcessor.class.getName()).log(Level.SEVERE, null, ex);
           }
         }
-        fetchCost(vendor, key, urls.get(key));
-        calculatePrice(vendor);
       }
-      log.info(String.format("DocProcessing %s %s done", vendor.get(Constants.Id), vendor.get(Constants.Sku)));
-    });
+      fetchCost(variant, key, urls.get(key));
+      calculatePrice(variant);
+    }
+    //log.info(String.format("DocProcessing %s %s done", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
   }
 
   private static String fetchPage(String url) {
@@ -85,33 +83,36 @@ public class DocumentProcessor extends Thread {
     return html;
   }
 
-  private static void fetchCost(Document vendor, String key, String html) {
+  private static void fetchCost(Document variant, String key, String html) {
     if (key.contains("samsclub.com")) {
-      SamsclubProcessor.costing(vendor, html);
+      SamsclubProcessor.costing(variant, html);
     } else if (key.contains("costco.com")) {
-      CostcoProcessor.costing(vendor, html);
+      CostcoProcessor.costing(variant, html);
     } else if (key.contains("keurig.com")) {
-      KeurigProcessor.costing(vendor, html);
+      KeurigProcessor.costing(variant, html);
     } else if (key.contains("bjs.com")) {
-      BjsProcessor.costing(vendor, html);
+      BjsProcessor.costing(variant, html);
     }
   }
   public final static double MARKUP_TAXABLE = 0.82;
   public final static double MARKUP_NON_TAXABLE = 0.9;
   public final static double MARKUP_DISCOUNT = 0.04;
 
-  private static void calculatePrice(Document vendor) {
-    if (!vendor.containsKey(Constants.Status)) {
-      vendor.put(Constants.Status, Constants.Page_Not_Available);
+  private static void calculatePrice(Document variant) {
+    if (!variant.containsKey(Constants.Status)) {
+      variant.put(Constants.Status, Constants.Page_Not_Available);
       return;
-    } else if (!vendor.get(Constants.Status).equals(Constants.In_Stock)) {
+    } else if (!variant.get(Constants.Status).equals(Constants.In_Stock)) {
       return;
     }
-    double cost = vendor.getDouble(Constants.Final_Cost);
-    int minqty = vendor.getInteger(Constants.Min_Quantity);
-    double shipping = vendor.getDouble(Constants.Shipping);
-    boolean taxable = vendor.getBoolean(Constants.Taxable);
-    boolean discounted = vendor.getBoolean(Constants.Discounted);
+    double cost = variant.getDouble(Constants.Final_Cost);
+    if (((Document)variant.get("vendor")).containsKey(Constants.ExtraCost)) {
+      cost += ((Document)variant.get("vendor")).getDouble(Constants.ExtraCost);
+    }
+    int minqty = variant.getInteger(Constants.Min_Quantity);
+    double shipping = variant.getDouble(Constants.Shipping);
+    boolean taxable = ((Document)variant.get("vendor")).getBoolean("taxable");
+    boolean discounted = variant.getBoolean(Constants.Discounted);
     double price = cost * minqty;
     price += shipping;
     if (minqty >= 5 && price > 50) {
@@ -128,8 +129,8 @@ public class DocumentProcessor extends Thread {
     } else {
       price += 0.98;
     }
-    vendor.put(Constants.Final_Price, price);
-    vendor.put(Constants.List_Price, 0d);
+    variant.put(Constants.Final_Price, price);
+    variant.put(Constants.List_Price, 0d);
     if (discounted) {
     }
   }

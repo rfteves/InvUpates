@@ -18,6 +18,7 @@ public class TestRegisterLongId {
    */
   public static void main(String[] args) {
     RequestsHandler.register(123789082647L, true);
+    System.exit(0);
   }
   
 }

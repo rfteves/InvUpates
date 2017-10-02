@@ -104,6 +104,12 @@ public abstract class GateWay {
     return RestHttpClient.processPost(url.toString(), jsondata);
   }
 
+  public static String createProductMetaField(String env, long productId, String jsondata) {
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    url.append(String.format("/admin/products/%s/metafields.json", productId));
+    return RestHttpClient.processPost(url.toString(), jsondata);
+  }
+
   public static String getVariantMetaField(String env, long productId, long variantId) {
     StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append(String.format("/admin/products/%s/variants/%s/metafields.json", productId, variantId));
@@ -225,8 +231,8 @@ public abstract class GateWay {
     return RestHttpClient.processGet(url.toString());
   }
 
-  public static Document getMetafield(String env, Document variant, String namespace, String key) {
-    String meta = GateWay.getVariantMetaField(env, variant.getLong(Constants.Product_Id), variant.getLong(Constants.Id));
+  public static Document getProductMetafield(String env, long id, String namespace, String key) {
+    String meta = GateWay.getProductMetafields(env, id);
     Document metas = Document.parse(meta);
     List<Document> metafields = (List) metas.get(Constants.Metafields);
     Document retval = null;

@@ -230,26 +230,28 @@ public class Utilities {
     return value;
   }
 
-  public static void waitForStatus(Document vendor) {
+  public static void waitForStatus(Document variant) {
     int trials = 0;
     while (true) {
       ++trials;
-      if (vendor.containsKey(Constants.Status) && !vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
+      if (variant.containsKey(Constants.Status) && !variant.getString(Constants.Status).equals(Constants.In_Stock)) {
         break;
-      } else if (vendor.containsKey(Constants.Status) && vendor.getString(Constants.Status).equals(Constants.In_Stock) &&
-        vendor.containsKey(Constants.Final_Price)) {
+      } else if (variant.containsKey(Constants.Status) && variant.getString(Constants.Status).equals(Constants.In_Stock) &&
+        variant.containsKey(Constants.Final_Price)) {
         break;
       } else if (trials > 10) {
-        System.out.println("waiting status break after 10 tries" + vendor.getString(Constants.Sku));
+        //System.out.println("waiting status break after 10 tries" + variant.getString(Constants.Sku));
+        break;
       } else {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ex) {
           log.error("waitForStatus", ex);
         }
-        System.out.println("waiting status " + vendor.getString(Constants.Sku));
+        //System.out.println("waiting status " + variant.getString(Constants.Sku));
       }
     }
+    //System.out.println("waiting status  done " + variant.getString(Constants.Sku));
   }
 
   public static boolean isMoreThanMinutesAgo(Calendar then, int minutes) {
@@ -276,6 +278,9 @@ public class Utilities {
   }
   
   public static String trimSku(String sku) {
+    if (sku == null) {
+      return null;
+    }
     while (sku.toLowerCase().charAt(sku.length() -1) >= 'a' && sku.toLowerCase().charAt(sku.length() -1) <= 'z' ) {
       sku = sku.substring(0, sku.length() - 1);
     }

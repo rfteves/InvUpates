@@ -9,7 +9,6 @@ import com.gotkcups.data.Constants;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -25,46 +24,46 @@ import org.jsoup.select.Elements;
  */
 public class BjsProcessor {
 
-  public static void costing(Document vendor, String html) {
+  public static void costing(Document variant, String html) {
     if (html == null) {
-      vendor.put(Constants.Status, Constants.Page_Not_Available);
+      variant.put(Constants.Status, Constants.Page_Not_Available);
       return;
     }
     if (html.contains("<h1>Product Not Found</h1>")) {
-      vendor.put(Constants.Status, Constants.Product_Not_Found);
+      variant.put(Constants.Status, Constants.Product_Not_Found);
       return;
     }
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
     Element model = doc.getElementById("productModel");
     if (model != null) {
       int start = 0, end = 0;
-      String s = (String) vendor.get("sku");
+      String s = (String) variant.get("sku");
       String sku = s.substring(0, s.length() - 1);
       String idp = model.text();
       if (idp.contains(sku)) {
         String available = doc.getElementById("itemNotAvail").attr("style");
         if (available.equals("display:none")) {
           boolean shippingIncluded = false;
-          vendor.put(Constants.Status, Constants.In_Stock);
-          vendor.put(Constants.Min_Quantity, 1);
-          vendor.put(Constants.Discounted, false);
+          variant.put(Constants.Status, Constants.In_Stock);
+          variant.put(Constants.Min_Quantity, 1);
+          variant.put(Constants.Discounted, false);
           if (doc.getElementsByClass("shipping").size() == 1
             && doc.getElementsByClass("shipping").get(0).text().contains("Shipping Included")) {
             shippingIncluded = true;
           }
           boolean discounted = false;
           if (doc.getElementsByTag("strike").size() == 1) {
-            vendor.put(Constants.Default_Cost, Double.parseDouble(doc.getElementsByTag("strike").get(0).text().substring(1)));
+            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByTag("strike").get(0).text().substring(1)));
             discounted = true;
           } else if (doc.getElementsByClass("price-container").size() == 1
             && doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").size() == 1) {
-            vendor.put(Constants.Default_Cost, Double.parseDouble(doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").text().substring(1)));
+            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").text().substring(1)));
           }
-          vendor.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
+          variant.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
           if (shippingIncluded) {
-            vendor.put(Constants.Shipping, 0d);
-          } else if (vendor.containsKey(Constants.Default_Shipping) && vendor.getDouble(Constants.Default_Shipping) > 0) {
-            vendor.put(Constants.Shipping, vendor.getDouble(Constants.Default_Shipping));
+            variant.put(Constants.Shipping, 0d);
+          } else if (variant.containsKey(Constants.Default_Shipping) && variant.getDouble(Constants.Default_Shipping) > 0) {
+            variant.put(Constants.Shipping, variant.getDouble(Constants.Default_Shipping));
           }
           if (discounted) {
             Elements scripts = doc.getElementsByTag("script");
@@ -79,9 +78,9 @@ public class BjsProcessor {
                   date.setTime(sdb.parse(m.group()));
                   date.add(Calendar.HOUR, 19);
                   if (System.currentTimeMillis() > date.getTimeInMillis()) {
-                    vendor.put(Constants.Discounted, false);
+                    variant.put(Constants.Discounted, false);
                   } else {
-                    vendor.put(Constants.Discounted, true);
+                    variant.put(Constants.Discounted, true);
                   }
                 } catch (ParseException ex) {
                   Logger.getLogger(CostcoProcessor.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,9 +89,12 @@ public class BjsProcessor {
             });
           }
         } else {
-          vendor.put(Constants.Status, Constants.Out_Of_Stock);
+          variant.put(Constants.Status, Constants.Out_Of_Stock);
         }
       }
+    }
+    if (((Document) variant.get("vendor")).containsKey(Constants.ExtraCost)) {
+      variant.put(Constants.ExtraCost, ((Document) variant.get("vendor")).get(Constants.ExtraCost));
     }
   }
   private final static StringBuilder sb = new StringBuilder();

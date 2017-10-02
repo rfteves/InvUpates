@@ -68,4 +68,5 @@ public interface Constants {
     String Variantid = "variantid";
     String Pageid = "pageid";
     String OrdinalCount = "ordinal";
+    String ExtraCost = "extra-cost";
 }

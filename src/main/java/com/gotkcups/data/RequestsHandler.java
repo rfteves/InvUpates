@@ -43,41 +43,37 @@ public class RequestsHandler extends Thread {
     }
     // Get variant infos
     for (Document variant : sorted) {
-      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
+        variant.append("debug", product.get("debug"));
+        variant.append("debug-id", product.getLong(Constants.Id));
         Document values = Document.parse(value);
-        values.append("debug", product.get("debug"));
-        values.append("debug-id", product.getLong(Constants.Id));
-        variant.put("results", values);
-        register(values);
+        variant.put("vendor", values.get("vendor"));
+        register(variant);
       }
     }
     // Now set prices/invqty
     for (Document variant : sorted) {
-      if (!variant.containsKey("results")) {
+      if (!variant.containsKey("vendor")) {
         continue;
       }
-      Document results = (Document) variant.get("results");
-      List<Document> vendors = (List) results.get("vendors");
       String status = null;
       String currentStatus = variant.getInteger(Constants.Inventory_Quantity) > 0 ? Constants.In_Stock : Constants.Out_Of_Stock;
       Double price = null;
       Double currentPrice = Double.valueOf(variant.getString(Constants.Price));
-      for (Document vendor : vendors) {
-        Utilities.waitForStatus(vendor);
-        if (vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
-          status = Constants.In_Stock;
-          if (price == null || vendor.getDouble(Constants.Final_Price).doubleValue() < price) {
-            price = vendor.getDouble(Constants.Final_Price);
-          }
-        } else if (status == null) {
-          status = Constants.Out_Of_Stock;
+      Utilities.waitForStatus(variant);
+      if (variant.getString(Constants.Status).equals(Constants.In_Stock)) {
+        status = Constants.In_Stock;
+        if (price == null || variant.getDouble(Constants.Final_Price).doubleValue() < price) {
+          price = variant.getDouble(Constants.Final_Price);
         }
+      } else if (status == null) {
+        status = Constants.Out_Of_Stock;
       }
       RequestsHandler.updateVariant(status, currentStatus, price, currentPrice, variant);
       MongoDBJDBC.updateVariantIP(variant, message);
-      log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Id), message.toString()));
+      //log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Product_Id), message.toString()));
     }
   }
   private final static int MAX_PURCHASE = 11500;
@@ -88,7 +84,7 @@ public class RequestsHandler extends Thread {
   }
 
   public static void register(long id, boolean debug) {
-    log.info("Register product " + id);
+    //log.info("Register product " + id);
     String json = GateWay.getProduct(Constants.Production, id);
     Document result = Document.parse(json);
     Document product = (Document) result.get(Constants.Product);
@@ -96,7 +92,7 @@ public class RequestsHandler extends Thread {
     registerProduct(product);
   }
 
-  public static void register(Document vendors) {
+  public static void register(Document variant) {
     if (HANDLER == null || !HANDLER.isAlive()) {
       synchronized (REQUESTS) {
         if (HANDLER == null) {
@@ -105,12 +101,12 @@ public class RequestsHandler extends Thread {
         }
       }
     }
-    HANDLER.add(vendors);
+    HANDLER.add(variant);
   }
 
   private boolean accessing;
 
-  private void add(Document vendors) {
+  private void add(Document variant) {
     synchronized (this) {
       while (accessing) {
         try {
@@ -119,14 +115,14 @@ public class RequestsHandler extends Thread {
           Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
       }
-      REQUESTS.add(vendors);
+      REQUESTS.add(variant);
       accessing = true;
       this.notifyAll();
     }
   }
 
   public void run() {
-    Document vendors = null;
+    Document variant = null;
     Map<String, String> urls = new LinkedHashMap<>();
     while (true) {
       synchronized (this) {
@@ -138,13 +134,13 @@ public class RequestsHandler extends Thread {
           }
         }
         if (!REQUESTS.isEmpty()) {
-          vendors = REQUESTS.remove(0);
+          variant = REQUESTS.remove(0);
         }
         accessing = false;
         this.notifyAll();
       }
-      if (vendors != null) {
-        DocumentProcessor.accept(urls, vendors);
+      if (variant != null) {
+        DocumentProcessor.accept(urls, variant);
       }
       if (urls.size() > 30) {
         urls.clear();
@@ -211,9 +207,9 @@ public class RequestsHandler extends Thread {
       message.insert(0, variant.getLong(Constants.Id));
       System.out.println(message.toString());
       int debug = 0;
-      GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+      //GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
     } else {
-      System.out.println(message.toString());
+      //System.out.println(message.toString());
     }
   }
   private static List<String> messages = new ArrayList<>();

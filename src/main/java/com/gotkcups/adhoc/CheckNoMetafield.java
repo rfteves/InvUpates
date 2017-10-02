@@ -54,7 +54,7 @@ public class CheckNoMetafield {
       }
     }
     for (Document variant : sorted) {
-      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield == null) {
         System.out.println(variant.getString("title") + " " + variant.getString("sku"));
       }

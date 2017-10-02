@@ -29,15 +29,15 @@ public class SamsclubProcessor {
   //<button class="biggreenbtn" tabindex="2" id="addtocartsingleajaxonline"> Ship this item</button>
   private static StringBuilder pad = new StringBuilder();
 
-  public static void costing(Document vendor, String html) {
+  public static void costing(Document variant, String html) {
     if (html == null) {
-      vendor.put(Constants.Status, Constants.Page_Not_Available);
+      variant.put(Constants.Status, Constants.Page_Not_Available);
       return;
     }
     if (html.contains("41,98")) {
       int i = 0;
     }
-    String s = (String) vendor.get("sku");
+    String s = (String) variant.get("sku");
     String sku = Utilities.trimSku(s);
     String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
     String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
@@ -48,7 +48,7 @@ public class SamsclubProcessor {
       pad.append(StringEscapeUtils.unescapeHtml(html.substring(start, end)));
       Document mbj = Document.parse(pad.toString());
       List<Document> availableSkus = (List) mbj.get("availableSKUs");
-      vendor.put(Constants.Status, Constants.Out_Of_Stock);
+      variant.put(Constants.Status, Constants.Out_Of_Stock);
       availableSkus.stream().filter(available -> available.getString("itemNo").equals(sku)
         && available.containsKey("onlineInventoryVO")).forEach(available -> {
         Document onlineInv = (Document) available.get("onlineInventoryVO");
@@ -56,63 +56,63 @@ public class SamsclubProcessor {
         if (onlineInv == null || onlinePrice == null) {
           int debug = 0;
         }
-        vendor.put(Constants.Status, "inStock".equals(onlineInv.getString("status")) ? Constants.In_Stock : Constants.Out_Of_Stock);
-        vendor.put(Constants.Final_Cost, onlinePrice.getDouble("finalPrice"));
-        vendor.put(Constants.List_Cost, onlinePrice.getDouble("listPrice"));
-        double shipping = retrieveShipping(vendor, html);
-        vendor.put(Constants.Shipping, shipping);
+        variant.put(Constants.Status, "inStock".equals(onlineInv.getString("status")) ? Constants.In_Stock : Constants.Out_Of_Stock);
+        variant.put(Constants.Final_Cost, onlinePrice.getDouble("finalPrice"));
+        variant.put(Constants.List_Cost, onlinePrice.getDouble("listPrice"));
+        double shipping = retrieveShipping(variant, html);
+        variant.put(Constants.Shipping, shipping);
       });
     } else if (html.contains(id)) {
       if (html.contains("<link itemprop=availability href=\"http://schema.org/InStock\"/>")
         && html.contains("<button class=biggreenbtn tabindex=2 id=addtocartsingleajaxonline> Ship this item</button>")) {
-        vendor.put(Constants.Status, Constants.In_Stock);
+        variant.put(Constants.Status, Constants.In_Stock);
         double finalCost = retrieveCost(html);
-        vendor.put(Constants.Final_Cost, finalCost);
-        double shipping = retrieveShipping(vendor, html);
-        vendor.put(Constants.Shipping, shipping);
+        variant.put(Constants.Final_Cost, finalCost);
+        double shipping = retrieveShipping(variant, html);
+        variant.put(Constants.Shipping, shipping);
       } else {
-        vendor.put(Constants.Status, Constants.Out_Of_Stock);
+        variant.put(Constants.Status, Constants.Out_Of_Stock);
       }
     } else if (html.contains(id2)) {
       if (html.contains("this item is not available in your selected club")
         || html.contains("Select a club for price and availability")) {
-        vendor.put(Constants.Status, Constants.Out_Of_Stock);
+        variant.put(Constants.Status, Constants.Out_Of_Stock);
       } else if (html.contains(">Add to cart</button>")) {
-        vendor.put(Constants.Status, Constants.In_Stock);
+        variant.put(Constants.Status, Constants.In_Stock);
         double finalCost = retrieveCost(html);
-        vendor.put(Constants.Final_Cost, finalCost);
-        double shipping = retrieveShipping(vendor, html);
-        vendor.put(Constants.Shipping, shipping);
+        variant.put(Constants.Final_Cost, finalCost);
+        double shipping = retrieveShipping(variant, html);
+        variant.put(Constants.Shipping, shipping);
       } else {
-        vendor.put(Constants.Status, Constants.Page_Not_Available);
+        variant.put(Constants.Status, Constants.Page_Not_Available);
       }
     } else {
-      vendor.put(Constants.Status, Constants.Product_Not_Found);
+      variant.put(Constants.Status, Constants.Product_Not_Found);
     }
-    if (!vendor.containsKey(Constants.Status)) {
+    if (!variant.containsKey(Constants.Status)) {
       int debug = 0;
     }
-    if (vendor.getString(Constants.Status).equals(Constants.In_Stock)
-      && (vendor.getDouble(Constants.Final_Cost) == null || vendor.getDouble(Constants.Final_Cost) <= 0)) {
-      vendor.put(Constants.Status, Constants.Product_Cost_Not_Found);
+    if (variant.getString(Constants.Status).equals(Constants.In_Stock)
+      && (variant.getDouble(Constants.Final_Cost) == null || variant.getDouble(Constants.Final_Cost) <= 0)) {
+      variant.put(Constants.Status, Constants.Product_Cost_Not_Found);
     }
-    if (!vendor.getString(Constants.Status).equals(Constants.In_Stock)) {
+    if (!variant.getString(Constants.Status).equals(Constants.In_Stock)) {
       return;
     }
-    int qty = retrieveMinimumQuantity(vendor);
-    vendor.put(Constants.Min_Quantity, qty);
-    double cost = vendor.getDouble(Constants.Final_Cost);
-    if (vendor.getDouble(Constants.Shipping) == 0 && cost < 50) {
+    int qty = retrieveMinimumQuantity(variant);
+    variant.put(Constants.Min_Quantity, qty);
+    double cost = variant.getDouble(Constants.Final_Cost);
+    if (variant.getDouble(Constants.Shipping) == 0 && cost < 50) {
       cost *= 1.04;
     } else if (cost < 50) {
       cost *= 1.02;
     }
-    if (vendor.getDouble(Constants.Shipping) == null) {
-      vendor.put(Constants.Shipping, 0d);
+    if (variant.getDouble(Constants.Shipping) == null) {
+      variant.put(Constants.Shipping, 0d);
     }
-    vendor.put(Constants.Discounted, false);
+    variant.put(Constants.Discounted, false);
     cost = Math.floor(cost * 100) / 100;
-    vendor.put(Constants.Final_Cost, cost);
+    variant.put(Constants.Final_Cost, cost);
   }
 
   private static double retrieveCost(String html) {
@@ -162,25 +162,25 @@ public class SamsclubProcessor {
     return retval;
   }
 
-  private static double retrieveShipping(Document vendor, String html) {
+  private static double retrieveShipping(Document variant, String html) {
     //Shipping trumps defaultShipping
     if (html.contains("<div class=freeDelvryTxt>") || html.contains(">Free shipping</span>")) {
       return 0d;
     } else {
       // Not free shipping. Either we defined a defaultshipping or get it from application.properties
-      if (vendor.get(Constants.Default_Shipping) == null && vendor.getDouble(Constants.Default_Shipping) == 0) {
+      if (variant.get(Constants.Default_Shipping) == null || variant.getDouble(Constants.Default_Shipping) == 0) {
         return Double.parseDouble(Utilities.getApplicationProperty("samsclub.defaultshipping"));
       } else {
-        return vendor.getDouble(Constants.Default_Shipping);
+        return variant.getDouble(Constants.Default_Shipping);
       }
     }
   }
 
-  private static int retrieveMinimumQuantity(Document vendor) {
-    if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getInteger(Constants.Default_Min_Quantity) <= 0) {
+  private static int retrieveMinimumQuantity(Document variant) {
+    if (variant.get(Constants.Default_Min_Quantity) == null || variant.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
-      return vendor.getInteger(Constants.Default_Min_Quantity);
+      return variant.getInteger(Constants.Default_Min_Quantity);
     }
   }
 }

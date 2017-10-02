@@ -54,11 +54,11 @@ public class IsolateBjsMetafield {
       }
     }
     for (Document variant : sorted) {
-      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
-        Document vendor = (Document)((List)values.get("vendors")).get(0);
+        Document vendor = (Document)((List)values.get("vendor")).get(0);
         if (vendor.containsKey("bjs.com")) {
           System.out.println(variant.getString("product_title") + " " +
             variant.getLong(Constants.Product_Id) + " " + variant.getLong(Constants.Id));

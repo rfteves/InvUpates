@@ -55,11 +55,11 @@ public class CheckDefaultCost {
     }
     for (Document variant : sorted) {
       System.out.println("Querying " + variant.get("product_title"));
-      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
-        Document vendor = (Document)((List)values.get("vendors")).get(0);
+        Document vendor = (Document)((List)values.get("vendor")).get(0);
         if (vendor.containsKey(Constants.Default_Cost)) {
           System.out.println(variant.getString("product_title") + " " +
             variant.getLong(Constants.Product_Id) + " " + vendor.getDouble(Constants.Default_Cost));

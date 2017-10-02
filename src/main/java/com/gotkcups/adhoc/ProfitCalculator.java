@@ -45,7 +45,7 @@ public class ProfitCalculator {
       if (!(product.getLong("id") == 9746198410L
         || product.getLong("id") == 155550127938378l
         || product.getLong("id") == 101358555503082l)) {
-        continue;
+        //continue;
       }
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
@@ -74,7 +74,7 @@ public class ProfitCalculator {
     builder.append("label");
     System.out.println(builder.toString());
     for (Document variant : sorted) {
-      Document metafield = GateWay.getMetafield("prod", variant, Constants.Inventory, Constants.Vendor);
+      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       Document adwords = GateWay.getProductMetafieldsPloy(Constants.Production, variant.getLong(Constants.Product_Id));
       builder.setLength(0);
       builder.append("shopify_us_");
@@ -97,7 +97,7 @@ public class ProfitCalculator {
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
-        Document vendor = (Document)((List)values.get("vendors")).get(0);
+        Document vendor = (Document)((List)values.get("vendor")).get(0);
         if (vendor.containsKey(Constants.DefaultShipping)) {
           defaultshipping = vendor.getDouble(Constants.DefaultShipping);
         }
@@ -111,6 +111,8 @@ public class ProfitCalculator {
       builder.append(BigDecimal.valueOf(profit).setScale(2, RoundingMode.HALF_UP));
       builder.append(SEPARATOR);
       builder.append(adwords.getString("custom_label_0"));
+      builder.append(SEPARATOR);
+      builder.append(defaultshipping);
       System.out.println(builder.toString());
     }
   }
