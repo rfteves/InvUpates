@@ -20,9 +20,9 @@ public abstract class GateWay {
   public static Document getAllProducts(String env, Map<String, String> params) throws IOException {
     return getAllProducts(env, params, 50, -1);
   }
-  
+
   public static void init() {
-    
+
   }
 
   public static Document getAllProducts(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
@@ -91,7 +91,7 @@ public abstract class GateWay {
       }
     }
   }
-  
+
   public static String getCustomersCount(String env) {
     StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
     url.append("/admin/customers/count.json");
@@ -186,7 +186,7 @@ public abstract class GateWay {
     sb.append(String.format("/admin/products/%d/metafields.json", productId));
     return RestHttpClient.processGet(sb.toString());
   }
-  
+
   public static Document getProductMetafieldsPloy(String env, long productId) {
     Document metas = null;
     StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
@@ -244,7 +244,7 @@ public abstract class GateWay {
     }
     return retval;
   }
-  
+
   public static Document getAllCustomers(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
     final Document[] object = new Document[1];
     Document next = null;
@@ -283,12 +283,48 @@ public abstract class GateWay {
     GateWay.processParams(url, params);
     return RestHttpClient.processGet(url.toString());
   }
-  
+
   public static Document productMetafields(String metastr) {
     Document meta = new Document();
     List<Document> metafields = (List) Document.parse(metastr).get("metafields");
     metafields.stream().forEach(kv -> meta.append(kv.getString("key"),
       (kv.get("value") instanceof Integer) ? kv.getInteger("value").toString() : kv.getString("value")));
     return meta;
+  }
+
+  public static Document getAllCollects(String env, Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
+    final Document[] object = new Document[1];
+    Document next = null;
+    int page = 0;
+    params.put("limit", "" + pageLimit);
+    int pageMax = pageLimit;
+    while (pageLimit == pageMax) {
+      params.put("page", ++page + "");
+      String take = GateWay.getCollects(env, params);
+      Document tempdoc = Document.parse(take);
+      if (object[0] == null) {
+        object[0] = tempdoc;
+      } else {
+        next = tempdoc;
+        List<Document> docs = (List) next.get("collects");
+        docs.stream().forEach(((List) object[0].get("collects"))::add);
+      }
+      pageLimit = ((List) tempdoc.get("collects")).size();
+      if (bookLimit < 0) {
+        continue;
+      } else if (((List) object[0].get("collects")).size() >= bookLimit) {
+        break;
+      }
+      //if (true)break;
+    }
+    return object[0];
+  }
+
+  public static String getCollects(String env, Map<String, String> params) {
+    StringBuilder sb = new StringBuilder(Utilities.getApplicationProperty(env));
+    StringBuilder url = new StringBuilder("/admin/collects.json");
+    GateWay.processParams(url, params);
+    sb.append(url);
+    return RestHttpClient.processGet(sb.toString());
   }
 }
