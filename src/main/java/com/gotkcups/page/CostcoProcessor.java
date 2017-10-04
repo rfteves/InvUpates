@@ -7,6 +7,7 @@ package com.gotkcups.page;
 
 import com.cwd.db.Base64Coder;
 import com.gotkcups.data.Constants;
+import com.gotkcups.io.Utilities;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -45,7 +46,7 @@ public class CostcoProcessor {
     if (s.equals("1074897C")) {
       int b = 0;
     }
-    String sku = s.substring(0, s.length() - 1);
+    String sku = Utilities.trimSku(s);
     Document products = (Document) vendor.get(Constants.Costco_Products);
     List<Document> prods = (List) ((List) products.get("products")).get(0);
     Document options = (Document) vendor.get(Constants.Costco_Options);
@@ -94,6 +95,7 @@ public class CostcoProcessor {
           String str = element.attr("data-opvalue");
           double cost = Double.parseDouble(Base64Coder.decode(str));
           variant.put(Constants.List_Cost, cost);
+          break;
         }
       }
     }

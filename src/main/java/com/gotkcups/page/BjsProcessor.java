@@ -6,6 +6,7 @@
 package com.gotkcups.page;
 
 import com.gotkcups.data.Constants;
+import com.gotkcups.io.Utilities;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,7 +39,7 @@ public class BjsProcessor {
     if (model != null) {
       int start = 0, end = 0;
       String s = (String) variant.get("sku");
-      String sku = s.substring(0, s.length() - 1);
+      String sku = Utilities.trimSku(s);
       String idp = model.text();
       if (idp.contains(sku)) {
         String available = doc.getElementById("itemNotAvail").attr("style");

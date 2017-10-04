@@ -239,9 +239,6 @@ public class Utilities {
       } else if (variant.containsKey(Constants.Status) && variant.getString(Constants.Status).equals(Constants.In_Stock) &&
         variant.containsKey(Constants.Final_Price)) {
         break;
-      } else if (trials > 10) {
-        //System.out.println("waiting status break after 10 tries" + variant.getString(Constants.Sku));
-        break;
       } else {
         try {
           Thread.sleep(1000);
