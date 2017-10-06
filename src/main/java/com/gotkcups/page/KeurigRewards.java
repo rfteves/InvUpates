@@ -48,6 +48,7 @@ public class KeurigRewards {
       kw = new KeurigRewards();
       kw.login(sku);
     } else if (kw.life < System.currentTimeMillis()) {
+      kw.cookieStore.clear();
       kw.logout();
       kw = new KeurigRewards();
       kw.login(sku);

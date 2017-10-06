@@ -37,6 +37,13 @@ import org.jsoup.select.Elements;
  * @author ricardo
  */
 public class Login {
+
+  /**
+   * @return the cookieStore
+   */
+  public CookieStore getCookieStore() {
+    return cookieStore;
+  }
   
   private RequestConfig globalConfig;
   private CookieStore cookieStore;

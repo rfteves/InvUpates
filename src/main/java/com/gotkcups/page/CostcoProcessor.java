@@ -125,8 +125,8 @@ public class CostcoProcessor {
     if (expired) {
       variant.put(Constants.Final_Cost, variant.get(Constants.List_Cost));
     }
-    if (((Document)variant.get("vendor")).containsKey(Constants.ExtraCost)) {
-      variant.put(Constants.ExtraCost, ((Document)variant.get("vendor")).get(Constants.ExtraCost));
+    if (((Document) variant.get("vendor")).containsKey(Constants.ExtraCost)) {
+      variant.put(Constants.ExtraCost, ((Document) variant.get("vendor")).get(Constants.ExtraCost));
     }
     int qty = retrieveMinimumQuantity(variant, html);
     variant.put(Constants.Min_Quantity, qty);
@@ -136,6 +136,19 @@ public class CostcoProcessor {
     if (start != -1) {
       String str = html.substring(start, end);
       Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(str);
+      if (m.find()) {
+        String group = m.group();
+        if (group.equals("0:00") || group.equals("0.00")) {
+          variant.put(Constants.Shipping, 0d);
+        } else {
+          shipping = Double.parseDouble(m.group());
+          variant.put(Constants.Shipping, shipping);
+        }
+      } else {
+        variant.put(Constants.Shipping, 0d);
+      }
+    } else if (doc.getElementById("grocery-fee-amount") != null) {
+      Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
       if (m.find()) {
         String group = m.group();
         if (group.equals("0:00") || group.equals("0.00")) {

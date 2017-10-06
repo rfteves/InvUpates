@@ -25,7 +25,8 @@ public class Springsale {
     Map<String, String> params = new HashMap<>();
     params.put("collection_id", "6732382231");
     //Document resp = GateWay.getAllCustomCollection("prod", 6732382231L, params, 150, -1);
-    Document collects = GateWay.getAllCollects(Constants.Production, params, 150, -1);
+    Document response = GateWay.getAllCollects(Constants.Production, params, 150, -1);
+    Document collects = (Document)response.get("collects");
     int y=0;
   }
   

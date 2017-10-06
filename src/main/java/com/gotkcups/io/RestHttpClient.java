@@ -35,51 +35,14 @@ public class RestHttpClient {
   public static String processGetHtml(String url) {
     String html = null;
     try {
+      if (login.getCookieStore().getCookies().size() > 100) {
+        login.getCookieStore().clear();
+      }
       html = login.sendGet(url);
     } catch (Exception ex) {
       Logger.getLogger(RestHttpClient.class.getName()).log(Level.SEVERE, null, ex);
     } finally {
       return html;
-    }
-  }
-  public static String processGetHtmlx(String url) {
-    Scanner in = null;
-    StringBuilder sb = new StringBuilder("Severe Error\r\n\r\n\r\n");
-    try {
-      HttpClient httpClient = HttpClientBuilder.create().build();
-      HttpGet request = new HttpGet(url);
-      RequestConfig globalConfig = RequestConfig.custom()
-        .setCookieSpec(CookieSpecs.DEFAULT)
-        .build();
-      RequestConfig localConfig = RequestConfig.copy(globalConfig)
-        .setCookieSpec(CookieSpecs.STANDARD_STRICT)
-        .build();
-      request.setConfig(localConfig);
-      request.setHeader("User-Agent", RestHttpClient.USER_AGENT);
-      request.addHeader("Content-Type", "text/html;charset=UTF-8");
-      request.addHeader("Accept", "text/html;charset=UTF-8");
-      //String edge = "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari/<WebKit Rev> Edge/<EdgeHTML Rev>.<Windows Build>";
-      //edge = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0";
-      //getRequest.addHeader("User-Agent", edge);
-      HttpResponse response = httpClient.execute(request);
-      in = new Scanner(response.getEntity().getContent());
-      sb.setLength(0);
-      while (in.hasNext()) {
-        sb.append(in.nextLine());
-        sb.append("\r\n");
-      }
-      if (response.getStatusLine().getStatusCode() != 200) {
-        sb.insert(0, "Severe Error\r\n\r\n\r\n");
-        //throw new RuntimeException("Failed : HTTP error code : " + response.getStatusLine().getStatusCode() + sb.toString());
-      }
-    } catch (Throwable ex) {
-      System.out.println("Error URL: " + url);
-      //ex.printStackTrace();
-    } finally {
-      if (in != null) {
-        in.close();
-      }
-      return sb.toString();
     }
   }
 
