@@ -43,7 +43,7 @@ public class BjsProcessor {
       String idp = model.text();
       if (idp.contains(sku)) {
         String available = doc.getElementById("itemNotAvail").attr("style");
-        if (available.equals("display:none")) {
+        if (doc.getElementsByClass("unvailable-icn").isEmpty()) {
           boolean shippingIncluded = false;
           variant.put(Constants.Status, Constants.In_Stock);
           variant.put(Constants.Min_Quantity, 1);

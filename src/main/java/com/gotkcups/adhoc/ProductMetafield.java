@@ -28,11 +28,19 @@ public class ProductMetafield {
     params.put("fields", "id,title,variants");
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
-    for (Document product : products) {
+    for (Document product : products) {//6931153543
+      if (!(product.getLong("id") == 6931153543L
+        || product.getLong("id") == 9760556810993399l
+        || product.getLong("id") == 933507564170339999l)) {
+        //continue;
+      }
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
         Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
-        if (metafield != null) {
+        if (metafield == null) {
+          System.out.println(product.getString("title")+":" +variant.getLong(Constants.Id));
+        }
+        if (false && metafield != null) {
           Document meta = new Document();
           meta.append("namespace", "inventory");
           meta.append("key", "vendor");
