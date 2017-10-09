@@ -179,7 +179,7 @@ public class GoogleProductAds {
           .replaceAll(", \"", ",\"")
           .replaceAll("\\{ ", "\\{")
           .replaceAll(" \\}", "\\}");
-        if (!prrJson.toString().toLowerCase().equals(json.toLowerCase())) {
+        if (!prrJson.toLowerCase().equals(json.toLowerCase())) {
           int kkk=0;
           System.out.println(prrJson);
           System.out.println(json);
