@@ -154,6 +154,7 @@ public class GoogleProductAds {
       for (Product pr : page.getResources()) {
         Document prr = new Document();
         prr.putAll(pr);
+        if (!pr.toString().contains("10128655114"))continue;
         prr.remove("taxes");
         System.out.println(pr.getId() + " : " + pr.size());
         Document ddd = getItemId(pr.getOfferId());
@@ -247,7 +248,7 @@ public class GoogleProductAds {
     retval.append(Constants.OfferId, String.format("shopify_US_%s_%s",
       product.getLong(Constants.Id).toString(),
       variant.getLong(Constants.Id)));
-    if (retval.toJson().contains("shopify_US_10135803082_38125854602")) {
+    if (retval.toJson().contains("73895936023")) {
       int imagelinks = 0;
     }
     retval.append(Constants.Id, String.format("online:en:US:%s", retval.getString(Constants.OfferId)));
@@ -321,12 +322,15 @@ public class GoogleProductAds {
         }
       }
     });
-    if (!variant.getString(Constants.Option_1).equals(Constants.Default_Title)) {
-      List<Document> options = (List) product.get(Constants.options);
+    List<Document> options = (List) product.get(Constants.options);
+    for (String name : new String[]{"color", "size"}) {
       options.stream().filter(option -> option.getString(Constants.Name)
-        .equalsIgnoreCase(Constants.Color)).forEach(option -> retval.append(Constants.Color, variant.getString(Constants.Option_1)));
+        .toLowerCase().contains(name)).forEach(option -> retval.append(
+          option.getString(Constants.Name).toLowerCase().contains(Constants.Color)?Constants.Color:Constants.Sizes,
+          option.getString(Constants.Name).toLowerCase().contains(Constants.Color)?
+          variant.getString(String.format("option%d", option.getInteger(Constants.Position))):
+          option.get(Constants.Values)));
     }
-
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     List<Document> taxes = new ArrayList<>();
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

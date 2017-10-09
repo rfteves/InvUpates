@@ -7,19 +7,12 @@ package com.gotkcups.adhoc;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.RequestsHandler;
-import static com.gotkcups.data.RequestsHandler.register;
 import com.gotkcups.io.GateWay;
-import com.gotkcups.io.Utilities;
-import com.gotkcups.sendmail.SendMail;
-import com.gotkcups.tools.CheckHello;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
@@ -48,7 +41,7 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 10321540362L
+      if (!(product.getLong("id") == 9723265674L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
         //continue;

@@ -125,4 +125,7 @@ public interface Constants {
     String ItemGroupId = "itemGroupId";
     String Name = "name";
     String Color = "color";
+    String Size = "size";
+    String Sizes = "sizes";
+    String Values = "values";
 }

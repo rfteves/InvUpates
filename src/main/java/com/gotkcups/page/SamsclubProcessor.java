@@ -164,23 +164,25 @@ public class SamsclubProcessor {
 
   private static double retrieveShipping(Document variant, String html) {
     //Shipping trumps defaultShipping
+    Document vendor = (Document)variant.get("vendor");
     if (html.contains("<div class=freeDelvryTxt>") || html.contains(">Free shipping</span>")) {
       return 0d;
     } else {
       // Not free shipping. Either we defined a defaultshipping or get it from application.properties
-      if (variant.get(Constants.Default_Shipping) == null || variant.getDouble(Constants.Default_Shipping) == 0) {
+      if (vendor.get(Constants.Default_Shipping) == null || vendor.getDouble(Constants.Default_Shipping) == 0) {
         return Double.parseDouble(Utilities.getApplicationProperty("samsclub.defaultshipping"));
       } else {
-        return variant.getDouble(Constants.Default_Shipping);
+        return vendor.getDouble(Constants.Default_Shipping);
       }
     }
   }
 
   private static int retrieveMinimumQuantity(Document variant) {
-    if (variant.get(Constants.Default_Min_Quantity) == null || variant.getInteger(Constants.Default_Min_Quantity) <= 0) {
+    Document vendor = (Document)variant.get("vendor");
+    if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
-      return variant.getInteger(Constants.Default_Min_Quantity);
+      return vendor.getInteger(Constants.Default_Min_Quantity);
     }
   }
 }

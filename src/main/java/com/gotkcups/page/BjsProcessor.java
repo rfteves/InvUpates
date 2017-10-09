@@ -34,6 +34,7 @@ public class BjsProcessor {
       variant.put(Constants.Status, Constants.Product_Not_Found);
       return;
     }
+    Document vendor = (Document)variant.get("vendor");
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
     Element model = doc.getElementById("productModel");
     if (model != null) {
@@ -63,8 +64,8 @@ public class BjsProcessor {
           variant.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
           if (shippingIncluded) {
             variant.put(Constants.Shipping, 0d);
-          } else if (variant.containsKey(Constants.Default_Shipping) && variant.getDouble(Constants.Default_Shipping) > 0) {
-            variant.put(Constants.Shipping, variant.getDouble(Constants.Default_Shipping));
+          } else if (vendor.containsKey(Constants.Default_Shipping) && vendor.getDouble(Constants.Default_Shipping) > 0) {
+            variant.put(Constants.Shipping, vendor.getDouble(Constants.Default_Shipping));
           }
           if (discounted) {
             Elements scripts = doc.getElementsByTag("script");

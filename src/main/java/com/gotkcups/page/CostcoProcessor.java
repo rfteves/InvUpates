@@ -165,7 +165,8 @@ public class CostcoProcessor {
     }
   }
 
-  private static int retrieveMinimumQuantity(Document product, String html) {
+  private static int retrieveMinimumQuantity(Document variant, String html) {
+    Document vendor = (Document)variant.get("vendor");
     int minqty = 1;
     Matcher m = Pattern.compile("Minimum Order Quantity: [0-9]{1,}").matcher(html);
     if (m.find()) {
@@ -174,10 +175,10 @@ public class CostcoProcessor {
         minqty = Integer.parseInt(m.group());
       }
       return minqty;
-    } else if (product.get(Constants.Default_Min_Quantity) == null || product.getInteger(Constants.Default_Min_Quantity) <= 0) {
+    } else if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
-      return product.getInteger(Constants.Default_Min_Quantity);
+      return vendor.getInteger(Constants.Default_Min_Quantity);
     }
   }
 
