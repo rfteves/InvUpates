@@ -283,4 +283,20 @@ public class Utilities {
     }
     return sku;
   }
+  
+  public static String properNamePloy(String source) {
+    StringBuilder builder = new StringBuilder(source);
+    int pos = 0;
+    while (pos < builder.toString().length() - 1) {
+      if (pos == 0) {
+        builder.replace(pos, pos + 1, (""+builder.toString().charAt(pos)).toUpperCase());
+      } else if (builder.toString().charAt(pos) == ' ' &&
+        builder.toString().charAt(pos + 1) >= 'a' &&
+        builder.toString().charAt(pos + 1) <= 'z') {
+        builder.replace(pos + 1, pos + 2, (""+builder.toString().charAt(pos + 1)).toUpperCase());
+      }
+      ++pos;
+    }
+    return builder.toString();
+  }
 }
