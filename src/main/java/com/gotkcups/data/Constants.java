@@ -128,4 +128,13 @@ public interface Constants {
     String Size = "size";
     String Sizes = "sizes";
     String Values = "values";
+    String Countries = "countries";
+    String Country = "country";
+    String Provinces = "provinces";
+    String Code = "code";
+    String Tax = "tax";
+    String Rate = "rate";
+    String Region = "region";
+    String TaxShip ="taxShip";
+    String Body_Html = "body_html";
 }

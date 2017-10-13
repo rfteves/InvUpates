@@ -231,6 +231,13 @@ public abstract class GateWay {
     return RestHttpClient.processGet(url.toString());
   }
 
+  public static String getCountries(String env) {
+    GateWay.init();
+    StringBuilder url = new StringBuilder(Utilities.getApplicationProperty(env));
+    url.append("/admin/countries.json");
+    return RestHttpClient.processGet(url.toString());
+  }
+
   public static Document getProductMetafield(String env, long id, String namespace, String key) {
     String meta = GateWay.getProductMetafields(env, id);
     Document metas = Document.parse(meta);

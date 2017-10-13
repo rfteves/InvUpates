@@ -184,7 +184,7 @@ public class GoogleShopping {
       for (Product pr : page.getResources()) {
         Document prr = new Document();
         prr.putAll(pr);
-        if (!pr.toString().contains("6931159623"))continue;
+        if (!pr.toString().contains("9798266122"))continue;
         //prr.remove("taxes");
         System.out.println(pr.getId() + " : " + pr.size());
         Document ddd = new GKProduct(pr.getOfferId()).buildProduct();

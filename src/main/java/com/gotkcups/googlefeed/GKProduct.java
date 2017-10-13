@@ -8,9 +8,13 @@ package com.gotkcups.googlefeed;
 import com.gotkcups.data.Constants;
 import com.gotkcups.io.GateWay;
 import com.gotkcups.io.Utilities;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.bson.Document;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -115,23 +119,16 @@ public class GKProduct extends Document {
         }
       }
     });
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    List<Document> taxes = new ArrayList<>();
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    Document tax = new Document();
-    tax.append("country", "US");
-    tax.append("rate", 0.0);
-    tax.append("taxShip", false);
-    taxes.add(tax);
-    this.append("taxes", taxes);
-    this.append("targetCountry", "US");
+    // Taxes
+    this.initTaxes();
     // Images
     this.initImages();
     // Options
     this.initOptions();
     // Final check
     if (!this.containsKey(Constants.Description)) {
-      this.append(Constants.Description, product.getString(Constants.Title));
+      String html = Jsoup.parse(product.getString(Constants.Body_Html)).text();
+      this.append(Constants.Description, html);
     }
     if (!this.containsKey(Constants.Title)) {
       this.append(Constants.Title, product.getString(Constants.Title));
@@ -139,6 +136,7 @@ public class GKProduct extends Document {
     if (!this.containsKey(Constants.Condition)) {
       this.append(Constants.Condition, Constants.New);
     }
+    this.append("targetCountry", "US");
     return this;
   }
 
@@ -191,6 +189,40 @@ public class GKProduct extends Document {
     });
     if (!additionalImageLinks.isEmpty()) {
       this.append(Constants.AdditionalImageLinks, additionalImageLinks);
+    }
+  }
+
+  static List<Document> taxes = new ArrayList<>();
+
+  private void initTaxes() {
+    if (taxes.isEmpty()) {
+      Document tax = new Document();
+      tax.append("country", "US");
+      tax.append("rate", 0.0);
+      tax.append("taxShip", false);
+      taxes.add(tax);
+      String countries = GateWay.getCountries(Constants.Production);
+      Document d = Document.parse(countries);
+      List<Document> c = (List) d.get(Constants.Countries);
+      List<Document> p = (List) c.get(0).get(Constants.Provinces);
+      p.stream().forEach(new Consumer<Document>() {
+        @Override
+        public void accept(Document ar) {
+          double rate = ar.getDouble(Constants.Tax) * 100;
+          if (rate != 0) {
+            rate = BigDecimal.valueOf(rate).setScale(2, RoundingMode.HALF_UP).doubleValue();
+          }
+          Document tx = new Document();
+          tx.append(Constants.Country, Constants.US);
+          tx.append(Constants.Rate, rate);
+          tx.append(Constants.Region, ar.getString(Constants.Code));
+          tx.append(Constants.TaxShip, rate != 0);
+          taxes.add(tx);
+        }
+      });
+    }
+    if (variant.getBoolean(Constants.Taxable)) {
+      this.append("taxes", taxes);
     }
   }
 }

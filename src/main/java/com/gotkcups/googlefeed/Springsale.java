@@ -15,9 +15,11 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.content.ShoppingContent;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.gotkcups.data.Constants;
+import static com.gotkcups.googlefeed.GoogleShopping.authorize;
 import com.gotkcups.io.GateWay;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,13 +38,13 @@ import org.bson.Document;
 public class Springsale {
 
   private static final String APPLICATION_NAME
-    = "Google Sheets API Promotion";
+    = "GotKcups Promotion";
 
   /**
    * Directory to store user credentials for this application.
    */
   private static final java.io.File DATA_STORE_DIR = new java.io.File(
-    System.getProperty("user.home"), ".credentials/sheets.googleapis.com-java-promotion");
+    System.getProperty("user.home"), ".credentials/products.googleapis.com-java-promotion");
 
   /**
    * Global instance of the JSON factory.
@@ -65,8 +67,11 @@ public class Springsale {
      * If modifying these scopes, delete your previously saved credentials
      * at ~/.credentials/sheets.googleapis.com-java-quickstart
      */
-    private static final List<String> SCOPES =
-        Arrays.asList(SheetsScopes.SPREADSHEETS);
+    
+  private static final List<String> SCOPES = Arrays.asList(
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/content");
 
 
   static {
@@ -118,30 +123,28 @@ public class Springsale {
       .setApplicationName(APPLICATION_NAME)
       .build();
   }
+  
+  public static ShoppingContent getShoppingContentService() throws IOException {
+    Credential credential = authorize();
+    ShoppingContent shopping = new ShoppingContent.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
+    return shopping;
+
+  }
 
   /**
    * @param args the command line arguments
    */
   public static void main(String[] args) throws Exception {
-    Sheets service = getSheetsService();
     Map<String, String> params = new HashMap<>();
     params.put("collection_id", Constants.KeurigSmallBoxes_CollectionId.toString());
     //Document resp = GateWay.getAllCustomCollection("prod", 6732382231L, params, 150, -1);
     List<String>ids = new ArrayList<>();
-    ids.add("SPRIN2017");
-    Document promoids = new Document();
-    promoids.append("promotion_id", ids);
-    Document response = GateWay.getAllCollects(Constants.Production, params, 150, -1);
+    ids.add("SPRING2017");
+    Document response = GateWay.getAllCollects(Constants.Production, params, 10, 10);
     List<Document> collects = (List) response.get("collects");
     for (Document collect : collects) {
-      Document promo = new Document();
-      promo.append("namespace", "google");
-      promo.append("key", "promotion_id");
-      promo.append("value", "[\"SPRING2017\"]");
-      promo.append("value_type", "string");
-      Document meta = new Document();
-      meta.append("metafield", promo);
-      String result = GateWay.createProductMetaField(Constants.Production, collect.getLong(Constants.Product_Id), meta.toJson());
+      int yyy=0;
+      //String result = GateWay.createProductMetaField(Constants.Production, collect.getLong(Constants.Product_Id), meta.toJson());
       int q = 0;
     }
     int y = 0;
