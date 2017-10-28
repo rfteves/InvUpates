@@ -66,6 +66,8 @@ public class BjsProcessor {
             variant.put(Constants.Shipping, 0d);
           } else if (vendor.containsKey(Constants.Default_Shipping) && vendor.getDouble(Constants.Default_Shipping) > 0) {
             variant.put(Constants.Shipping, vendor.getDouble(Constants.Default_Shipping));
+          } else {
+            variant.put(Constants.Shipping, variant.getDouble(Constants.Final_Cost) * 0.10);
           }
           if (discounted) {
             Elements scripts = doc.getElementsByTag("script");
