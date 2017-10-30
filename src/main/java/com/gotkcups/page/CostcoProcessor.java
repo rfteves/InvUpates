@@ -75,6 +75,12 @@ public class CostcoProcessor {
       variant.put(Constants.Status, Constants.Out_Of_Stock);
       return;
     }
+    org.jsoup.nodes.Document doc = Jsoup.parse(html);
+    Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
+    if (m.find()) {
+      variant.put(Constants.Status, Constants.Out_Of_Stock);
+      return;
+    }
     variant.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
     variant.put(Constants.Status, Constants.In_Stock);
     if (product.getString("listPrice") != null) {
@@ -86,7 +92,6 @@ public class CostcoProcessor {
       double cost = Double.parseDouble(Base64Coder.decode(str));
       variant.put(Constants.Final_Cost, cost);
     }
-    org.jsoup.nodes.Document doc = Jsoup.parse(html);
     if (variant.getDouble(Constants.List_Cost) == -1) {
       Elements elements = doc.getElementsByClass("online-price");
       for (Element element : elements) {
@@ -105,7 +110,7 @@ public class CostcoProcessor {
       int start = html.indexOf("<p class=\"PromotionalText\">") + "<p class=\"PromotionalText\">".length();
       int end = html.indexOf("</p>", start);
       String str = html.substring(start, end);
-      Matcher m = Pattern.compile("through [0-9]{1,2}/[0-9]{1,2}/[0-9]{2}").matcher(str);
+      m = Pattern.compile("through [0-9]{1,2}/[0-9]{1,2}/[0-9]{2}").matcher(str);
       if (m.find() && !str.contains("Limit")) {
         m = Pattern.compile("[0-9]{1,2}/[0-9]{1,2}/[0-9]{2}").matcher(m.group());
         if (m.find()) {
@@ -135,7 +140,7 @@ public class CostcoProcessor {
     double shipping = 0;
     if (start != -1) {
       String str = html.substring(start, end);
-      Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(str);
+      m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(str);
       if (m.find()) {
         String group = m.group();
         if (group.equals("0:00") || group.equals("0.00")) {
@@ -147,8 +152,8 @@ public class CostcoProcessor {
       } else {
         variant.put(Constants.Shipping, 0d);
       }
-    } else if (doc.getElementById("grocery-fee-amount") != null) {
-      Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
+    }/* else if (doc.getElementById("grocery-fee-amount") != null) {
+      m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
       if (m.find()) {
         String group = m.group();
         if (group.equals("0:00") || group.equals("0.00")) {
@@ -160,13 +165,13 @@ public class CostcoProcessor {
       } else {
         variant.put(Constants.Shipping, 0d);
       }
-    } else {
+    }*/ else {
       variant.put(Constants.Shipping, 0d);
     }
   }
 
   private static int retrieveMinimumQuantity(Document variant, String html) {
-    Document vendor = (Document)variant.get("vendor");
+    Document vendor = (Document) variant.get("vendor");
     int minqty = 1;
     Matcher m = Pattern.compile("Minimum Order Quantity: [0-9]{1,}").matcher(html);
     if (m.find()) {
