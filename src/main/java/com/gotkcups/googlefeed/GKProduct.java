@@ -30,6 +30,7 @@ public class GKProduct extends Document {
   public GKProduct(String itemId) {
     this.itemId = itemId;
     initializeItemId();
+    
   }
 
   public GKProduct(Document product, List<Document> variants, Long variantId) {

@@ -131,9 +131,8 @@
                     <layout>MODULE</layout>
                     <archive>
                         <manifest>
-                            <mainClass>com.gotkcups.adhoc.UpdateProducts</mainClass>
+                            <mainClass>com.gotkcups.invupdates.InvUpdatesApplication</mainClass>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>
@@ -146,6 +145,34 @@
                 </executions -->
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.gotkcups.invupdates.InvUpdatesApplication</mainClass>
+                    <profiles>
+                        <profile>production</profile>
+                    </profiles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -160,7 +187,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin -->
         </plugins>
     </build>
 </project>

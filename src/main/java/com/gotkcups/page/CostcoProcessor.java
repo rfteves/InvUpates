@@ -76,11 +76,11 @@ public class CostcoProcessor {
       return;
     }
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
-    Matcher m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
-    if (m.find()) {
+    if (doc.getElementById("grocery-fee-amount") != null) {
       variant.put(Constants.Status, Constants.Out_Of_Stock);
       return;
     }
+    Matcher m = null;
     variant.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
     variant.put(Constants.Status, Constants.In_Stock);
     if (product.getString("listPrice") != null) {

@@ -16,24 +16,36 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ricardo
  */
-public class UpdateProducts {
+@ComponentScan
+@Component
+@Profile("prod")
+public class UpdateProducts extends AbstractCLR {
 
   private final static Log log = LogFactory.getLog(UpdateProducts.class);
 
   /**
    * @param args the command line arguments
    */
-  public static void main(String[] args) throws Exception {
-    log.info("am here");
-    loopProducts();
-  }
 
-  private static void loopProducts() throws Exception {
+  @Override
+  public void process (String... args) throws Exception {
+    System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXX-5");
     int limit = 0;
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
@@ -41,10 +53,10 @@ public class UpdateProducts {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 10321595850L
+      if (!(product.getLong("id") == 285524066327L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
-        //continue;
+        continue;
       }
       RequestsHandler.register(product.getLong(Constants.Id));
       RearrangeVariants.process(product);
@@ -52,6 +64,7 @@ public class UpdateProducts {
     System.exit(0);
   }
   private static StringBuilder message = new StringBuilder();
-
-  
+  public static void main(String[] args) throws Exception {
+    new UpdateProducts().process(args);
+  }
 }
