@@ -11,16 +11,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
-@ComponentScan({"com.gotkcups.adhoc"})
-public class InvUpdatesApplication {
+//@ComponentScan({"com.gotkcups.adhoc"})
+/*public class InvUpdatesApplication {
 
   public static void main(String[] args) {
     //SpringApplication.run(InvUpdatesApplication.class, args);
     //GateWay.init();
     new SpringApplicationBuilder(InvUpdatesApplication.class).web(false).run(args);
   }
-}
-/*public class InvUpdatesApplication extends SpringBootServletInitializer {
+}*/
+public class InvUpdatesApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
@@ -33,4 +33,4 @@ public class InvUpdatesApplication {
         new SpringApplicationBuilder(InvUpdatesApplication.class).web(false).run(args);
     }
 
-}*/
+}

@@ -22,11 +22,13 @@ import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Ricardo
  */
+@Component
 public class RequestsHandler extends Thread {
 
   private final static Log log = LogFactory.getLog(RequestsHandler.class);
