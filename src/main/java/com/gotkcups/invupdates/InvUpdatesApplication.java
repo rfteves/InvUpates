@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
-//@ComponentScan({"com.gotkcups.adhoc"})
+@ComponentScan({"com.gotkcups.adhoc"})
 /*public class InvUpdatesApplication {
 
   public static void main(String[] args) {

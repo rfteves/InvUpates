@@ -6,36 +6,37 @@
 package com.gotkcups.adhoc;
 
 import com.gotkcups.data.Constants;
-import com.gotkcups.data.RequestsHandler;
 import com.gotkcups.io.GateWay;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
  *
- * @author ricardo
+ * @author rfteves
  */
 @Component
-@Profile("prod")
-public class UpdateProducts extends AbstractCLR {
-
-  private final static Log log = LogFactory.getLog(UpdateProducts.class);
-
-  /**
-   * @param args the command line arguments
-   */
-
+@Profile("selene")
+public class Selenium extends AbstractCLR {
+  @Value("${srm.send_mail}")
+  private String srmuser;
+  
   @Override
-  public void process (String... args) throws Exception {
-    int limit = 0;
+  public void process(String... args) throws Exception {
+    System.setProperty("webdriver.chrome.driver", "d:/Users/rfteves/JavaLibraries/chromedriver_win32/chromedriver.exe");
+    ChromeOptions options = new ChromeOptions();
+    options.addArguments("disable-infobars");
+    WebDriver driver = new ChromeDriver(options);
+    System.out.println("YYYYYYYYYYYYYYYYYYY " + srmuser);
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
@@ -47,13 +48,11 @@ public class UpdateProducts extends AbstractCLR {
         || product.getLong("id") == 933507564170339999l)) {
         continue;
       }
-      RequestsHandler.register(product.getLong(Constants.Id));
-      RearrangeVariants.process(product);
+      String metas = GateWay.getProductMetafields("prod", product.getLong(Constants.Id));
+      //Document metafieds = (List)Document.parse(metas).get(Constants.Metafields);
+      driver.get("https://www.costco.com");
     }
-    System.exit(0);
+
   }
-  private static StringBuilder message = new StringBuilder();
-  public static void main(String[] args) throws Exception {
-    new UpdateProducts().process(args);
-  }
+
 }

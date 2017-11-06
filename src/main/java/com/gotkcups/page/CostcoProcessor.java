@@ -105,7 +105,8 @@ public class CostcoProcessor {
       }
     }
     boolean expired = true;
-    if (doc.getElementsByClass("PromotionalText").size() == 1
+    if (variant.getDouble(Constants.List_Cost) > 30.0
+      && doc.getElementsByClass("PromotionalText").size() == 1
       && !doc.getElementsByClass("PromotionalText").get(0).text().contains("Limit ")) {
       int start = html.indexOf("<p class=\"PromotionalText\">") + "<p class=\"PromotionalText\">".length();
       int end = html.indexOf("</p>", start);
@@ -152,21 +153,12 @@ public class CostcoProcessor {
       } else {
         variant.put(Constants.Shipping, 0d);
       }
-    }/* else if (doc.getElementById("grocery-fee-amount") != null) {
-      m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(doc.getElementById("grocery-fee-amount").ownText());
-      if (m.find()) {
-        String group = m.group();
-        if (group.equals("0:00") || group.equals("0.00")) {
-          variant.put(Constants.Shipping, 0d);
-        } else {
-          shipping = Double.parseDouble(m.group());
-          variant.put(Constants.Shipping, shipping);
-        }
-      } else {
-        variant.put(Constants.Shipping, 0d);
-      }
-    }*/ else {
+    } else {
       variant.put(Constants.Shipping, 0d);
+    }
+    boolean taxable = ((Document) variant.get("vendor")).getBoolean("taxable");
+    if (!taxable) {
+      variant.put(Constants.Final_Cost, variant.getDouble(Constants.Final_Cost) * 1.02);
     }
   }
 

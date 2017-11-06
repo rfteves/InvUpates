@@ -116,6 +116,13 @@
             <artifactId>google-api-services-content</artifactId>
             <version>v2-rev100-1.22.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.7.0</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -158,7 +165,7 @@
                 <configuration>
                     <mainClass>com.gotkcups.invupdates.InvUpdatesApplication</mainClass>
                     <profiles>
-                        <profile>production</profile>
+                        <profile>selene</profile>
                     </profiles>
                 </configuration>
                 <executions>

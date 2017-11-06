@@ -102,10 +102,13 @@ public class SamsclubProcessor {
     int qty = retrieveMinimumQuantity(variant);
     variant.put(Constants.Min_Quantity, qty);
     double cost = variant.getDouble(Constants.Final_Cost);
-    if (variant.getDouble(Constants.Shipping) == 0 && cost < 50) {
-      cost *= 1.04;
-    } else if (cost < 50) {
-      cost *= 1.02;
+    boolean taxable = ((Document) variant.get("vendor")).getBoolean("taxable");
+    if (!taxable) {
+      if (variant.getDouble(Constants.Shipping) == 0 && cost < 50) {
+        cost *= 1.04;
+      } else if (cost < 50) {
+        cost *= 1.02;
+      }
     }
     if (variant.getDouble(Constants.Shipping) == null) {
       variant.put(Constants.Shipping, 0d);
@@ -164,7 +167,7 @@ public class SamsclubProcessor {
 
   private static double retrieveShipping(Document variant, String html) {
     //Shipping trumps defaultShipping
-    Document vendor = (Document)variant.get("vendor");
+    Document vendor = (Document) variant.get("vendor");
     if (html.contains("<div class=freeDelvryTxt>") || html.contains(">Free shipping</span>")) {
       return 0d;
     } else {
@@ -178,7 +181,7 @@ public class SamsclubProcessor {
   }
 
   private static int retrieveMinimumQuantity(Document variant) {
-    Document vendor = (Document)variant.get("vendor");
+    Document vendor = (Document) variant.get("vendor");
     if (vendor.get(Constants.Default_Min_Quantity) == null || vendor.getInteger(Constants.Default_Min_Quantity) <= 0) {
       return 1;
     } else {
