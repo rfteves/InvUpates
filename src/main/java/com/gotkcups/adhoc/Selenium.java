@@ -13,7 +13,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.bson.Document;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +34,7 @@ public class Selenium extends AbstractCLR {
   
   @Override
   public void process(String... args) throws Exception {
-    System.setProperty("webdriver.chrome.driver", "d:/Users/rfteves/JavaLibraries/chromedriver_win32/chromedriver.exe");
+    System.setProperty("webdriver.chrome.driver", "c:/Users/ricardo/JavaLibraries/chromedriver_win32/chromedriver.exe");
     ChromeOptions options = new ChromeOptions();
     options.addArguments("disable-infobars");
     WebDriver driver = new ChromeDriver(options);
@@ -50,7 +52,11 @@ public class Selenium extends AbstractCLR {
       }
       String metas = GateWay.getProductMetafields("prod", product.getLong(Constants.Id));
       //Document metafieds = (List)Document.parse(metas).get(Constants.Metafields);
-      driver.get("https://www.costco.com");
+      driver.get("https://www.costco.com/LogonForm");
+      driver.findElement(By.id("logonId")).sendKeys("evelyn1968@teves.us");
+      driver.findElement(By.id("logonPassword")).sendKeys("Nji9Bhu8");
+      driver.findElement(By.xpath(".//*[contains(@class,'tabable')]")).click();
+      driver.findElement(By.className("primary")).click();
     }
 
   }
