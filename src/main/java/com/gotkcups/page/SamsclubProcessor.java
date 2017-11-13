@@ -49,7 +49,8 @@ public class SamsclubProcessor {
       Document mbj = Document.parse(pad.toString());
       List<Document> availableSkus = (List) mbj.get("availableSKUs");
       variant.put(Constants.Status, Constants.Out_Of_Stock);
-      availableSkus.stream().filter(available -> available.getString("itemNo").equals(sku)
+      availableSkus.stream().filter(available ->
+        sku.equals(available.getString("itemNo"))
         && available.containsKey("onlineInventoryVO")).forEach(available -> {
         Document onlineInv = (Document) available.get("onlineInventoryVO");
         Document onlinePrice = (Document) available.get("onlinePriceVO");

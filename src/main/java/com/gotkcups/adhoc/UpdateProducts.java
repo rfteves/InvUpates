@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
  *
  * @author ricardo
  */
-@Component
-@Profile("prod")
+//@Component
+//@Profile("prod")
 public class UpdateProducts extends AbstractCLR {
 
   private final static Log log = LogFactory.getLog(UpdateProducts.class);
@@ -33,7 +33,7 @@ public class UpdateProducts extends AbstractCLR {
    * @param args the command line arguments
    */
 
-  @Override
+  //@Override
   public void process (String... args) throws Exception {
     int limit = 0;
     Map<String, String> params = new HashMap<>();
@@ -42,13 +42,13 @@ public class UpdateProducts extends AbstractCLR {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 292957913111L
+      if (!(product.getLong("id") == 10135803082L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
-        continue;
+        //continue;
       }
       RequestsHandler.register(product.getLong(Constants.Id));
-      RearrangeVariants.process(product);
+      //RearrangeVariants.process(product);
     }
     System.exit(0);
   }

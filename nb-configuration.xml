@@ -21,6 +21,7 @@ Any value defined here will override the pom.xml file value but is only applicab
             <configuration id="selenium" profiles="selene">
                 <property name="spring.profiles.active">selene</property>
             </configuration>
+            <configuration id="production" profiles=""/>
         </configurations>
     </config-data>
 </project-shared-configuration>

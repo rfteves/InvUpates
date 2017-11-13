@@ -42,9 +42,9 @@ public class ProfitCalculator {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 9746198410L
-        || product.getLong("id") == 155550127938378l
-        || product.getLong("id") == 101358555503082l)) {
+      if (!(product.getLong("id") == 9729878410L
+        || product.getLong("id") == 15555012793338378l
+        || product.getLong("id") == 10135855550303382l)) {
         //continue;
       }
       List<Document> variants = (List) product.get("variants");
@@ -94,18 +94,34 @@ public class ProfitCalculator {
       }
       double defaultshipping = 0;
       double discount = 0;
+      double extraCost = 0;
+      int minqty = 1;
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);
-        Document vendor = (Document)((List)values.get("vendor")).get(0);
+        Document vendor = (Document)values.get("vendor");
+        if (vendor.containsKey(Constants.Default_Min_Quantity)) {
+          minqty = vendor.getInteger(Constants.Default_Min_Quantity);
+        }
         if (vendor.containsKey(Constants.DefaultShipping)) {
           defaultshipping = vendor.getDouble(Constants.DefaultShipping);
         }
-        if (vendor.containsKey(Constants.Default_Min_Quantity) && vendor.getInteger(Constants.Default_Min_Quantity) >= 5 && price > 50) {
-          discount = vendor.getInteger(Constants.Default_Min_Quantity) * DocumentProcessor.BUNDLE_DISCOUNT;
+        if (minqty >= 5 && price > 50) {
+          discount = minqty * DocumentProcessor.BUNDLE_DISCOUNT;
         }
+        if (vendor.containsKey(Constants.ExtraCost)) {
+          extraCost = minqty * vendor.getDouble(Constants.ExtraCost);
+        }
+      } else {
+        /*System.out.println("BBBBBBBBBBBBBBBBBBBBB");
+        System.out.println("BBBBBBBBBBBBBBBBBBBBB");
+        System.out.println("BBBBBBBBBBBBBBBBBBBBB");
+        System.out.println("BBBBBBBBBBBBBBBBBBBBB");
+        System.out.println(variant.toJson());
+        System.exit(-1);*/
       }
       cost -= defaultshipping;
+      cost -= extraCost;
       cost += discount;
       double profit = Math.round((price - cost) * 100) * 0.01;
       builder.append(BigDecimal.valueOf(profit).setScale(2, RoundingMode.HALF_UP));

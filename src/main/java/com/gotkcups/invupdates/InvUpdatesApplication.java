@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
-@ComponentScan({"com.gotkcups.adhoc"})
+//@ComponentScan({"com.gotkcups.adhoc"})
 /*public class InvUpdatesApplication {
 
   public static void main(String[] args) {
@@ -29,8 +29,8 @@ public class InvUpdatesApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) throws Exception {
       GateWay.init();
-        //SpringApplication.run(InvUpdatesApplication.class, args);
-        new SpringApplicationBuilder(InvUpdatesApplication.class).web(false).run(args);
+        SpringApplication.run(InvUpdatesApplication.class, args);
+        //new SpringApplicationBuilder(InvUpdatesApplication.class).web(false).run(args);
     }
 
 }
