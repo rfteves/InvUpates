@@ -18,10 +18,8 @@ Any value defined here will override the pom.xml file value but is only applicab
     </properties>
     <config-data xmlns="http://www.netbeans.org/ns/maven-config-data/1">
         <configurations>
-            <configuration id="selenium" profiles="selene">
-                <property name="spring.profiles.active">selene</property>
-            </configuration>
             <configuration id="production" profiles=""/>
+            <configuration id="selenium" profiles="gpa"/>
         </configurations>
     </config-data>
 </project-shared-configuration>

@@ -10,6 +10,7 @@ package com.gotkcups.data;
  * @author Ricardo
  */
 public interface Constants {
+    String Type = "type";
     String Status = "Status";
     String Shipping = "Shipping";
     String Default_Shipping = "defaultshipping";
@@ -52,8 +53,12 @@ public interface Constants {
     String ProductId = "productid";
     String Key = "key";
     String Id = "id";
+    String Owner_Id = "owner_id";
     String _Id = "_id";
     String Value_Type = "value_type";
+    String Created_At = "created_at";
+    String Updated_At = "updated_at";
+    String Owner_Resource = "owner_resource";
     String Value = "value";
     
     String Remote_Host = "remoteHost";
@@ -122,7 +127,7 @@ public interface Constants {
     String Option_1 = "option1";
     String Option_2 = "option2";
     String options = "options";
-    String ItemGroupId = "itemGroupId";
+    String Item_Group_Id = "item_group_id";
     String Name = "name";
     String Color = "color";
     String Size = "size";

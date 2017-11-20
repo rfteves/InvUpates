@@ -56,7 +56,7 @@ public class RestHttpClient {
         Logger.getLogger(RestHttpClient.class.getName()).log(Level.SEVERE, null, ex);
       }
     }
-    lastGet = System.currentTimeMillis() + 1350;
+    lastGet = System.currentTimeMillis() + 300;
     //System.out.println("granted" + new Date());
   }
   

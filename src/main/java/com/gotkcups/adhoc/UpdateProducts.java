@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
  *
  * @author ricardo
  */
-//@Component
-//@Profile("prod")
+@Component
+@Profile("prod")
 public class UpdateProducts extends AbstractCLR {
 
   private final static Log log = LogFactory.getLog(UpdateProducts.class);
@@ -35,6 +35,7 @@ public class UpdateProducts extends AbstractCLR {
 
   //@Override
   public void process (String... args) throws Exception {
+    if (true)return;
     int limit = 0;
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");

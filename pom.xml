@@ -5,6 +5,7 @@
     <artifactId>invupdates</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
+    
     <name>InvUpdates</name>
     <description>Inventory Updates Cost and Price</description>
     <parent>
@@ -56,7 +57,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -122,60 +123,66 @@
             <artifactId>selenium-java</artifactId>
             <version>3.7.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-mongodb -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.1.1</version> 
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.23</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
-                <!-- groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <!-- configuration>
-                    <fork>true</fork>
-                </configuration -->
                 <configuration>
                     <layout>MODULE</layout>
                     <archive>
                         <manifest>
-                            <mainClass>com.gotkcups.invupdates.InvUpdatesApplication</mainClass>
+                            <mainClass>com.gotkcups.InvUpdatesApplication</mainClass>
                             <addClasspath>true</addClasspath>
+                            <classpathPrefix>target/lib</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>
-                <!-- executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions -->
             </plugin>
-            <plugin>
+            <!-- plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
-            </plugin>
+            </plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.gotkcups.invupdates.InvUpdatesApplication</mainClass>
+                    <mainClass>com.gotkcups.InvUpdatesApplication</mainClass>
                     <profiles>
-                        <profile>selene</profile>
+                        <!-- profile>selene</profile -->
+                        <profile>prod</profile>
+                        <profile>gpa</profile>
                     </profiles>
                 </configuration>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
                         <configuration>
                             <classifier>exec</classifier>
                         </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -197,4 +204,18 @@
             </plugin -->
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/libs-release</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/libs-release</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>

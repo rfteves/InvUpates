@@ -16,31 +16,19 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.content.ShoppingContent;
-import com.google.api.services.content.model.Product;
-import com.google.api.services.content.model.ProductsListResponse;
 import com.google.api.services.sheets.v4.Sheets;
-import com.gotkcups.data.Constants;
-import com.gotkcups.io.GateWay;
-import com.gotkcups.io.Utilities;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import org.bson.Document;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author rfteves
  */
+@Component
 public class GoogleShopping {
 
   private static final String APPLICATION_NAME
@@ -92,7 +80,7 @@ public class GoogleShopping {
    * @return an authorized Credential object.
    * @throws IOException
    */
-  public static Credential authorize() throws IOException {
+  public Credential authorize() throws IOException {
     // Load client secrets.
     InputStream in
       = GoogleShopping.class.getResourceAsStream("/client_secret.com.json");
@@ -113,14 +101,14 @@ public class GoogleShopping {
     return credential;
   }
 
-  public static ShoppingContent getShoppingContentService() throws IOException {
+  public ShoppingContent getShoppingContentService() throws IOException {
     Credential credential = authorize();
     ShoppingContent shopping = new ShoppingContent.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
     return shopping;
 
   }
 
-  public static Sheets getSheetsService() throws IOException {
+  public Sheets getSheetsService() throws IOException {
     Credential credential = authorize();
     return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
       .setApplicationName(APPLICATION_NAME)
@@ -131,7 +119,7 @@ public class GoogleShopping {
    * @param args the command line arguments
    */
   public static void main(String[] args) throws Exception {
-    
+
 
     /*Map<String, String> params = new HashMap<>();
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
@@ -158,75 +146,6 @@ public class GoogleShopping {
 
       int q = 0;
     }*/
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    ShoppingContent shopping = GoogleShopping.getShoppingContentService();
-    Product prod = shopping.products().get(BigInteger.valueOf(Long.parseLong(Utilities.getApplicationProperty(Constants.Google_Merchant_Id))), "online:en:US:shopify_US_6931144007_21985025479").execute();
-    ShoppingContent.Products.List productsList = (ShoppingContent.Products.List) shopping.products().list(BigInteger.valueOf(Long.parseLong(Utilities.getApplicationProperty(Constants.Google_Merchant_Id))));
-    Set<String> sizes = new LinkedHashSet<>();
-    Map<String, Object> holly = new LinkedHashMap<>();
-    do {
-      ProductsListResponse page = productsList.execute();
-      if (page.getResources() == null) {
-        System.out.println("No products found.");
-        break;
-      }
-      for (Product pr : page.getResources()) {
-        Document prr = new Document();
-        prr.putAll(pr);
-        if (!pr.toString().contains("9798266122"))continue;
-        //prr.remove("taxes");
-        System.out.println(pr.getId() + " : " + pr.size());
-        Document ddd = new GKProduct(pr.getOfferId()).buildProduct();
-        
-        int hhh=0;
-        Map<String,Object>sort = new TreeMap<>();
-        sort.putAll(ddd);
-        ddd.clear();
-        ddd.putAll(sort);
-        String json = ddd.toJson()
-          .replaceAll("\" : \"", "\":\"")
-          .replaceAll("\", \"", "\",\"")
-          .replaceAll("\" : ", "\":")
-          .replaceAll(", \"", ",\"")
-          .replaceAll("\\{ ", "\\{")
-          .replaceAll(" \\}", "\\}")
-          .replaceAll("[ ]{2,}", " ");
-        String prrJson = prr.toJson()
-          .replaceAll("\" : \"", "\":\"")
-          .replaceAll("\", \"", "\",\"")
-          .replaceAll("\" : ", "\":")
-          .replaceAll(", \"", ",\"")
-          .replaceAll("\\{ ", "\\{")
-          .replaceAll(" \\}", "\\}");
-        if (!prrJson.toLowerCase().equals(json.toLowerCase())) {
-          int kkk=0;
-          System.out.println(prrJson);
-          System.out.println(json);
-          int kkkkk=6;
-        }
-        sizes.addAll(pr.keySet());
-      }
-      if (page.getNextPageToken() == null) {
-        break;
-      }
-
-      productsList.setPageToken(page.getNextPageToken());
-    } while (true);
-
-    for (String key : sizes) {
-      System.out.println("xxx: " + key);
-    }
 
   }
 }

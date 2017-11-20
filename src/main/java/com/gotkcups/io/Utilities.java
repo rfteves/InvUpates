@@ -89,13 +89,13 @@ public class Utilities {
     return span;
   }
 
-  public static Date parsePublishedDate(String date) throws ParseException {
+  public static Date parseDate(String date) throws ParseException {
     String modified = date.substring(0, date.lastIndexOf(":")) + date.substring(date.lastIndexOf(":") + 1);
     SimpleDateFormat publishedTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     return publishedTime.parse(modified);
   }
 
-  public static String formatPublishedDate(Date date) throws ParseException {
+  public static String formatDate(Date date) throws ParseException {
     SimpleDateFormat publishedTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     String retval = publishedTime.format(date);
     return retval.substring(0, retval.length() - 2) + ":" + retval.substring(retval.length() - 2);

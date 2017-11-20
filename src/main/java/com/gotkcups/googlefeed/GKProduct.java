@@ -5,9 +5,16 @@
  */
 package com.gotkcups.googlefeed;
 
+import com.google.api.services.content.model.Price;
+import com.google.api.services.content.model.Product;
+import com.google.api.services.content.model.ProductShippingWeight;
+import com.google.api.services.content.model.ProductTax;
 import com.gotkcups.data.Constants;
-import com.gotkcups.io.GateWay;
+import com.gotkcups.io.RestHelper;
 import com.gotkcups.io.Utilities;
+import com.gotkcups.model.Metafield;
+import com.gotkcups.repos.MetafieldJPARepository;
+import com.gotkcups.repos.MetafieldRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -15,108 +22,124 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.bson.Document;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Ricardo
  */
-public class GKProduct extends Document {
+@Service
+public class GKProduct {
+
+  @Autowired
+  private RestHelper restHelper;
+  @Autowired
+  private MetafieldRepository repo;
+  @Autowired
+  private UpdateStateTaxes taxes;
+  @Autowired
+  private MetafieldJPARepository jpa;
 
   private String itemId;
-  private Document product, variant;
+  private Document product, variant, vendor;
   private List<Document> metafields, variants;
   private long productId, variantId;
+  private Product productEntry;
 
-  public GKProduct(String itemId) {
-    this.itemId = itemId;
-    initializeItemId();
-    
+  public GKProduct() {
   }
 
-  public GKProduct(Document product, List<Document> variants, Long variantId) {
+  public GKProduct setProductVariant(Document product, List<Document> variants, Long variantId) {
+    productEntry = new Product();
     this.variantId = variantId;
     this.productId = product.getLong(Constants.Id);
     this.itemId = String.format("shopify_US_%d_%d", productId, variantId);
     this.product = product;
     this.variants = variants;
-    String resp = GateWay.getProductMetafields(Constants.Production, productId);
-    Document metas = Document.parse(resp);
-    metafields = (List) metas.get(Constants.Metafields);
+    List<Metafield> metas = jpa.findByOwnerid(productId);
+    metafields = new ArrayList<>();
+    metas.stream().forEach(meta -> {
+      Document d = Task.createDocument(meta);
+      metafields.add(d);
+    });
     variant = variants.stream().filter(var -> var.getLong(Constants.Id) == variantId).findFirst().get();
+    return this;
   }
 
-  private void initializeItemId() {
-    String[] ids = itemId.split("_");
-    productId = Long.parseLong(ids[2]);
-    variantId = Long.parseLong(ids[3]);
-    String resp = GateWay.getProduct(Constants.Production, productId);
-    Document result = Document.parse(resp);
-    product = (Document) result.get(Constants.Product);
-    resp = GateWay.getProductMetafields(Constants.Production, productId);
-    Document metas = Document.parse(resp);
-    metafields = (List) metas.get(Constants.Metafields);
-    variants = (List) product.get(Constants.Variants);
-    variant = variants.stream().filter(var -> var.getLong(Constants.Id) == variantId).findFirst().get();
-  }
-
-  public Document buildProduct() {
-    this.append(Constants.OfferId, String.format("shopify_US_%s_%s",
+  public Product buildProduct() {
+    productEntry.setOfferId(String.format("shopify_US_%s_%s",
       product.getLong(Constants.Id).toString(),
       variant.getLong(Constants.Id)));
-    if (this.toJson().contains("73895936023")) {
-      int imagelinks = 0;
+    productEntry.setId(String.format("online:en:US:%s", productEntry.getOfferId()));
+    productEntry.setAdwordsRedirect(String.format("https://www.gotkcups.com/products/%s?utm_medium=cpc&utm_source=googlepla&variant=%s",
+      product.getString(Constants.Handle),
+      variant.getLong(Constants.Id)));
+    productEntry.setLink(String.format("https://www.gotkcups.com/products/%s?utm_medium=cpc&utm_source=googleshopping&variant=%s",
+      product.getString(Constants.Handle),
+      variant.getLong(Constants.Id)));
+    productEntry.setAvailability(variant.getInteger(Constants.Inventory_Quantity) == 0 ? "out of stock" : "in stock");
+    productEntry.setBrand(product.getString(Constants.Vendor));
+    productEntry.setChannel(Constants.Online);
+    productEntry.setContentLanguage(Constants.En);
+    if (variant.getString(Constants.Barcode) == null || variant.getString(Constants.Barcode).trim().length() == 0) {
+      productEntry.setIdentifierExists(false);
+    } else {
+      productEntry.setGtin(variant.getString(Constants.Barcode));
     }
-    this.append(Constants.Id, String.format("online:en:US:%s", this.getString(Constants.OfferId)));
-    this.append(Constants.AdwordsRedirect,
-      String.format("https://www.gotkcups.com/products/%s?utm_medium=cpc&utm_source=googlepla&variant=%s",
-        product.getString(Constants.Handle),
-        variant.getLong(Constants.Id)));
-    this.append(Constants.Link,
-      String.format("https://www.gotkcups.com/products/%s?utm_medium=cpc&utm_source=googleshopping&variant=%s",
-        product.getString(Constants.Handle),
-        variant.getLong(Constants.Id)));
-    this.append(Constants.Availability, variant.getInteger(Constants.Inventory_Quantity) == 0 ? "out of stock" : "in stock");
-    this.append(Constants.Brand, product.getString(Constants.Vendor));
-    this.append(Constants.Channel, Constants.Online);
-    this.append(Constants.ContentLanguage, Constants.En);
-    this.append(Constants.GTIN, variant.getString(Constants.Barcode));
-    this.append(Constants.IdentifierExists, true);
-    this.append(Constants.Kind, Constants.Content_Product);
-    Document price = new Document("currency", "USD");
-    price.append(Constants.Value, variant.getString(Constants.Price));
-    this.append(Constants.Price, price);
-    this.append(Constants.ProductType, product.getString(Constants.Product_Type));
-    Document weight = new Document("unit", "g");
-    weight.append(Constants.Value, Double.valueOf(variant.getInteger(Constants.Grams)));
-    this.append(Constants.ShippingWeight, weight);
-    this.append(Constants.TargetCountry, Constants.US);
+    productEntry.setKind(Constants.Content_Product);
+    Price price = new Price();
+    price.setCurrency("USD");
+    price.setValue(variant.getString(Constants.Price));
+    productEntry.setPrice(price);
+
+    ProductShippingWeight weight = new com.google.api.services.content.model.ProductShippingWeight();
+    weight.setUnit("g");
+    weight.setValue(Double.valueOf(variant.getInteger(Constants.Grams)));
+    productEntry.setShippingWeight(weight);
+    productEntry.setTargetCountry(Constants.US);
 
     metafields.stream().forEach(meta -> {
+      //metafieldRepo.save(m);
       if (meta.getString(Constants.Namespace).equals(Constants.Google)) {
         if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Adwords_Grouping)) {
-          this.append(Constants.AdwordsGrouping, meta.getString(Constants.Value));
+          productEntry.setAdwordsGrouping(meta.getString(Constants.Value));
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Adwords_Labels)) {
           List<String> labels = new ArrayList<>();
           labels.add(meta.getString(Constants.Value));
-          this.append(Constants.AdwordsLabels, labels);
+          productEntry.setAdwordsLabels(labels);
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Condition)) {
-          this.append(Constants.Condition, meta.getString(Constants.Value));
+          productEntry.setCondition(meta.getString(Constants.Value));
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Google_Product_Type)) {
-          this.append(Constants.GoogleProductCategory,
-            Utilities.properNamePloy(meta.getString(Constants.Value)));
+          productEntry.setGoogleProductCategory(Utilities.properNamePloy(meta.getString(Constants.Value)));
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Age_Group)) {
-          this.append(Constants.AgeGroup, meta.getString(Constants.Value));
+          productEntry.setAgeGroup(meta.getString(Constants.Value));
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Gender)) {
-          this.append(Constants.Gender, meta.getString(Constants.Value));
+          productEntry.setGender(meta.getString(Constants.Value));
         } else if (meta.getString(Constants.Key).startsWith("custom_label_")) {
-          String key = meta.getString(Constants.Key);
-          this.append("customLabel".concat(key.substring(key.length() - 1)), meta.getString(Constants.Value));
+          if (meta.getString(Constants.Key).endsWith("0")) {
+            productEntry.setCustomLabel0(meta.getString(Constants.Value));
+          } else if (meta.getString(Constants.Key).endsWith("1")) {
+            productEntry.setCustomLabel1(meta.getString(Constants.Value));
+          } else if (meta.getString(Constants.Key).endsWith("2")) {
+            productEntry.setCustomLabel2(meta.getString(Constants.Value));
+          } else if (meta.getString(Constants.Key).endsWith("3")) {
+            productEntry.setCustomLabel3(meta.getString(Constants.Value));
+          } else if (meta.getString(Constants.Key).endsWith("4")) {
+            productEntry.setCustomLabel4(meta.getString(Constants.Value));
+          }
         }
       } else if (meta.getString(Constants.Namespace).equals(Constants.Global)) {
         if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Description_Tag)) {
-          this.append(Constants.Description, meta.getString(Constants.Value));
+          productEntry.setDescription(meta.getString(Constants.Value));
         } else if (meta.getString(Constants.Key).equalsIgnoreCase(Constants.Title_Tag)) {
-          this.append(Constants.Title, meta.getString(Constants.Value));
+          productEntry.setTitle(meta.getString(Constants.Value));
+        }
+      } else if (meta.getString(Constants.Namespace).equals(Constants.Inventory)) {
+        Document vendor = (Document) Document.parse(meta.getString(Constants.Value)).get("vendor");
+        if (vendor.containsKey(Constants.Default_Min_Quantity) && vendor.getInteger(Constants.Default_Min_Quantity) > 1) {
+          productEntry.setMultipack((long) vendor.getInteger(Constants.Default_Min_Quantity));
         }
       }
     });
@@ -125,20 +148,20 @@ public class GKProduct extends Document {
     // Images
     this.initImages();
     // Options
-    this.initOptions();
     // Final check
-    if (!this.containsKey(Constants.Description)) {
+    if (productEntry.getDescription() == null) {
       String html = Jsoup.parse(product.getString(Constants.Body_Html)).text();
-      this.append(Constants.Description, html);
+      productEntry.setDescription(html);
     }
-    if (!this.containsKey(Constants.Title)) {
-      this.append(Constants.Title, product.getString(Constants.Title));
+    if (productEntry.getTitle() == null) {
+      productEntry.setTitle(product.getString(Constants.Title));
     }
-    if (!this.containsKey(Constants.Condition)) {
-      this.append(Constants.Condition, Constants.New);
+    if (productEntry.getCondition() == null) {
+      productEntry.setCondition(Constants.New);
     }
-    this.append("targetCountry", "US");
-    return this;
+    productEntry.setTargetCountry("US");
+    this.initOptions();
+    return productEntry;
   }
 
   private void initOptions() {
@@ -151,18 +174,21 @@ public class GKProduct extends Document {
         Object value = null;
         if (key.equalsIgnoreCase(Constants.Color)) {
           value = variant.getString(String.format("option1"));
-          this.append(key, value);
+          productEntry.setColor(value.toString());
+          productEntry.setItemGroupId(String.format("shopify_US_%s",
+            product.getLong(Constants.Id).toString()));
+          productEntry.setTitle(productEntry.getTitle().concat(" ").concat(value.toString()));
         } else {
-          List<String> available = new ArrayList<>();
-          this.append("sizes", available);
-          value = available;
           variants.stream()
             .filter(
-              var
-              -> var.getInteger("inventory_quantity") > 0
-              && var.getString("option1").equals(this.getString("color")))
+              var -> var.getLong(Constants.Id).equals(this.variantId))
             .map(var -> var.getString("option2"))
-            .forEach(available::add);
+            .forEach(sz -> {
+              List<String> sizes = new ArrayList<>();
+              sizes.add(sz);
+              productEntry.setSizes(sizes);
+              productEntry.setTitle(productEntry.getTitle().concat(" ").concat(sz));
+            });
         }
       });
     }
@@ -173,7 +199,7 @@ public class GKProduct extends Document {
     List<Document> images = (List) product.get(Constants.Images);
     images.stream()
       .filter(image -> image.getInteger(Constants.Position).equals(variant.getInteger(Constants.Position)))
-      .forEach(image -> this.append(Constants.ImageLink, image.getString(Constants.Src)));
+      .forEach(image -> productEntry.setImageLink(image.getString(Constants.Src)));
     // Assign secondary images which is none existent right now
     if (variants.size() > 1) {
       return;
@@ -182,48 +208,20 @@ public class GKProduct extends Document {
     images.stream().forEach(image -> {
       List<Long> variant_ids = (List) image.get(Constants.Variant_Ids);
       if (variant_ids.isEmpty() || variant_ids.contains(variant.getLong(Constants.Id))) {
-        if (!image.getString(Constants.Src).equals(this.getString(Constants.ImageLink))
+        if (!image.getString(Constants.Src).equals(productEntry.getImageLink())
           && !additionalImageLinks.contains(image.getString(Constants.Src))) {
           additionalImageLinks.add(image.getString(Constants.Src));
         }
       }
     });
     if (!additionalImageLinks.isEmpty()) {
-      this.append(Constants.AdditionalImageLinks, additionalImageLinks);
+      productEntry.setAdditionalImageLinks(additionalImageLinks);
     }
   }
 
-  static List<Document> taxes = new ArrayList<>();
-
   private void initTaxes() {
-    if (taxes.isEmpty()) {
-      Document tax = new Document();
-      tax.append("country", "US");
-      tax.append("rate", 0.0);
-      tax.append("taxShip", false);
-      taxes.add(tax);
-      String countries = GateWay.getCountries(Constants.Production);
-      Document d = Document.parse(countries);
-      List<Document> c = (List) d.get(Constants.Countries);
-      List<Document> p = (List) c.get(0).get(Constants.Provinces);
-      p.stream().forEach(new Consumer<Document>() {
-        @Override
-        public void accept(Document ar) {
-          double rate = ar.getDouble(Constants.Tax) * 100;
-          if (rate != 0) {
-            rate = BigDecimal.valueOf(rate).setScale(2, RoundingMode.HALF_UP).doubleValue();
-          }
-          Document tx = new Document();
-          tx.append(Constants.Country, Constants.US);
-          tx.append(Constants.Rate, rate);
-          tx.append(Constants.Region, ar.getString(Constants.Code));
-          tx.append(Constants.TaxShip, rate != 0);
-          taxes.add(tx);
-        }
-      });
-    }
     if (variant.getBoolean(Constants.Taxable)) {
-      this.append("taxes", taxes);
+      productEntry.setTaxes(taxes.getTaxes());
     }
   }
 }
