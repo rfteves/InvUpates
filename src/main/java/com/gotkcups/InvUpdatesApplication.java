@@ -31,7 +31,7 @@ public class InvUpdatesApplication extends SpringBootServletInitializer {
     }
 
     public static void main(String[] args) throws Exception {
-      args = new String[0];
+      //args = new String[0];
       boolean nowebapp = Optional.of(Arrays.asList(args).stream().filter(arg->arg.equals("-nowebapp")).findFirst().isPresent()).orNull();
       
       //Arrays.asList(args).stream().filter(arg->arg.equals("-nowebapp")).forEach(nowebapp=true;);

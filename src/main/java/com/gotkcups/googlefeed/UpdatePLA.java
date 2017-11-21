@@ -11,17 +11,23 @@ import com.google.api.services.content.model.ProductsCustomBatchRequest;
 import com.google.api.services.content.model.ProductsCustomBatchRequestEntry;
 import com.google.api.services.content.model.ProductsCustomBatchResponse;
 import com.gotkcups.data.Constants;
+import com.gotkcups.data.RequestsHandler;
+import com.gotkcups.io.GateWay;
 import com.gotkcups.io.RestHelper;
 import com.gotkcups.io.Utilities;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,22 +59,10 @@ public class UpdatePLA extends Task {
 
   @Override
   public void process(String... args) throws Exception {
-
-    Calendar today = Calendar.getInstance();
-    Map<String, String> params = new HashMap<>();
-    params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
-    Document resp = restHelper.getAllCollects(params, 10, 1);
-    List<Document> collects = (List) resp.get(Constants.Collects);
+    List<Document>filteredProducts = this.getFilteredProducts();
     Map<Long, Product> products = new LinkedHashMap<>();
-    Long startIndex = counter.incrementAndGet();
-    for (Document collect : collects) {
-      //if(collect.getLong(Constants.Product_Id)!=9729878410L)continue;
-      String result = restHelper.getProduct(collect.getLong(Constants.Product_Id));
-      Document product = (Document) ((Document) Document.parse(result)).get(Constants.Product);
-      Date updated = Utilities.parseDate(product.getString("updated_at"));
-      if (updated.getTime() + (4 * ONE_DAY) < today.getTimeInMillis()) {
-        continue;
-      }
+    long startIndex = counter.incrementAndGet();
+    for (Document product : filteredProducts) {
       List<Document> variants = (List) product.get(Constants.Variants);
       variants.stream().forEach(var -> {
         Product productEntry = gkp.setProductVariant(product, variants, var.getLong(Constants.Id)).buildProduct();
@@ -76,9 +70,9 @@ public class UpdatePLA extends Task {
         System.out.println(productEntry.getOfferId());
       });
     }
-    Long endIndex = counter.incrementAndGet();
-    //this.processProducts(products, startIndex, endIndex, 50);
-    this.processProducts(products, 1, 102, 50);
+    long endIndex = counter.incrementAndGet();
+    this.processProducts(products, startIndex, endIndex, 50);
+    //this.processProducts(products, 1, 102, 50);
   }
 
   private void processProducts(Map<Long, Product> products, long start, long end, int limit) throws IOException {
@@ -95,6 +89,7 @@ public class UpdatePLA extends Task {
         entry.setProductId(productEntry.getOfferId());
         entry.setMethod("insert");
         entries.add(entry);
+        System.out.println(productEntry.toString());
       });
     if (entries.isEmpty()) {
       return;
@@ -106,9 +101,35 @@ public class UpdatePLA extends Task {
     response.getEntries().forEach(entry -> {
       System.out.println(entry.getProduct().getTitle() + " " + entry.getProduct().getMultipack() + " " + entry.getErrors());
     });
-    if (start + limit < end) {
+    if (entries.size() < limit) {
       return;
     }
-    this.processProducts(products, start + limit, end, 50);
+    this.processProducts(products, start + limit, end, limit);
+  }
+  
+  private List<Document> getFilteredProducts() throws IOException, ParseException {
+    Calendar today = Calendar.getInstance();
+    Map<String, String> params = new HashMap<>();
+    params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
+    Document resp = restHelper.getAllCollects(params, 120, -1);
+    List<Document> collects = (List) resp.get(Constants.Collects);
+    long updated_at = today.getTimeInMillis() - (12 * ONE_HOUR);
+    Set<Long>validIds = new HashSet<>();
+    for (Document collect : collects) {
+      validIds.add(collect.getLong(Constants.Product_Id));
+    }
+    params.clear();
+    //params.put("fields", "id,title,variants,updated_at");
+    resp = GateWay.getAllProducts("prod", params, 150, -1);
+    List<Document>products = (List) resp.get("products");
+    List<Document>filtered = new ArrayList<>();
+    for (Document product : products) {
+      Date updated = Utilities.parseDate(product.getString("updated_at"));
+      if(validIds.contains(product.getLong(Constants.Id))
+        && updated.getTime() >= updated_at) {
+        filtered.add(product);
+      }
+    }
+    return filtered;
   }
 }
