@@ -80,7 +80,11 @@ public class GKProduct {
       product.getString(Constants.Handle),
       variant.getLong(Constants.Id)));
     productEntry.setAvailability(variant.getInteger(Constants.Inventory_Quantity) == 0 ? "out of stock" : "in stock");
-    productEntry.setBrand(product.getString(Constants.Vendor));
+    if (variant.getString(Constants.Barcode) == null || variant.getString(Constants.Barcode).trim().length() == 0) {
+      
+    } else {
+      productEntry.setBrand(product.getString(Constants.Vendor));
+    }
     productEntry.setChannel(Constants.Online);
     productEntry.setContentLanguage(Constants.En);
     if (variant.getString(Constants.Barcode) == null || variant.getString(Constants.Barcode).trim().length() == 0) {
@@ -195,27 +199,26 @@ public class GKProduct {
   }
 
   private void initImages() {
+    /*if (variant.getLong(Constants.Id) == 47372547274L
+      || variant.getLong(Constants.Id) == 47372530570L
+      || variant.getLong(Constants.Id) == 47372544522L) {
+      int y = 0;
+    }*/
     // Assign primary image
     List<Document> images = (List) product.get(Constants.Images);
-    images.stream()
-      .filter(image -> image.getInteger(Constants.Position).equals(variant.getInteger(Constants.Position)))
-      .forEach(image -> productEntry.setImageLink(image.getString(Constants.Src)));
-    // Assign secondary images which is none existent right now
     if (variants.size() > 1) {
-      return;
-    }
-    List<String> additionalImageLinks = new ArrayList<>();
-    images.stream().forEach(image -> {
-      List<Long> variant_ids = (List) image.get(Constants.Variant_Ids);
-      if (variant_ids.isEmpty() || variant_ids.contains(variant.getLong(Constants.Id))) {
-        if (!image.getString(Constants.Src).equals(productEntry.getImageLink())
-          && !additionalImageLinks.contains(image.getString(Constants.Src))) {
-          additionalImageLinks.add(image.getString(Constants.Src));
-        }
+      images.stream()
+        .filter(image -> image.getLong(Constants.Id).longValue() == variant.getLong(Constants.Image_Id))
+        .forEach(image -> productEntry.setImageLink(image.getString(Constants.Src)));
+      // Assign secondary images which is none existent right now
+    } else {
+      List<String> additionalImageLinks = new ArrayList<>();
+      images.stream().map(img-> img.getString(Constants.Src)).forEach(additionalImageLinks::add);
+      if (!additionalImageLinks.isEmpty()) {
+        productEntry.setImageLink(additionalImageLinks.remove(0));
+        productEntry.setAdditionalImageLinks(additionalImageLinks);
       }
-    });
-    if (!additionalImageLinks.isEmpty()) {
-      productEntry.setAdditionalImageLinks(additionalImageLinks);
+      int y= 0;
     }
   }
 

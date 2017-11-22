@@ -68,6 +68,9 @@ public class UpdatePLA extends Task {
         Product productEntry = gkp.setProductVariant(product, variants, var.getLong(Constants.Id)).buildProduct();
         products.put(counter.incrementAndGet(), productEntry);
         System.out.println(productEntry.getOfferId());
+        if (productEntry.getOfferId().equals("shopify_US_10769327626_41991345354")) {
+          int u=0;
+        }
       });
     }
     long endIndex = counter.incrementAndGet();
@@ -113,7 +116,7 @@ public class UpdatePLA extends Task {
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
     Document resp = restHelper.getAllCollects(params, 120, -1);
     List<Document> collects = (List) resp.get(Constants.Collects);
-    long updated_at = today.getTimeInMillis() - (12 * ONE_HOUR);
+    long updated_at = today.getTimeInMillis() - (2 * ONE_HOUR);
     Set<Long>validIds = new HashSet<>();
     for (Document collect : collects) {
       validIds.add(collect.getLong(Constants.Product_Id));
@@ -123,9 +126,13 @@ public class UpdatePLA extends Task {
     resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document>products = (List) resp.get("products");
     List<Document>filtered = new ArrayList<>();
+    long debugProduct = 0;//11865486474L;
     for (Document product : products) {
       Date updated = Utilities.parseDate(product.getString("updated_at"));
-      if(validIds.contains(product.getLong(Constants.Id))
+      if(product.getLong(Constants.Id) == debugProduct) {
+        filtered.add(product);
+        break;
+      } else if(debugProduct == 0L && validIds.contains(product.getLong(Constants.Id))
         && updated.getTime() >= updated_at) {
         filtered.add(product);
       }

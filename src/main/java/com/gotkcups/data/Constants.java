@@ -107,6 +107,7 @@ public interface Constants {
     String IdentifierExists = "identifierExists";
     String ImageLink = "imageLink";
     String Images = "images";
+    String Image_Id = "image_id";
     String Position = "position";
     String Src = "src";
     String Kind = "kind";
