@@ -116,7 +116,7 @@ public class UpdatePLA extends Task {
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
     Document resp = restHelper.getAllCollects(params, 120, -1);
     List<Document> collects = (List) resp.get(Constants.Collects);
-    long updated_at = today.getTimeInMillis() - (10 * ONE_HOUR);
+    long updated_at = today.getTimeInMillis() - (1 * ONE_HOUR);
     Set<Long>validIds = new HashSet<>();
     for (Document collect : collects) {
       validIds.add(collect.getLong(Constants.Product_Id));
