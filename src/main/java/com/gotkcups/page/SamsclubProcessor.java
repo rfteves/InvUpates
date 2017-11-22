@@ -39,8 +39,8 @@ public class SamsclubProcessor {
     }
     String s = (String) variant.get("sku");
     String sku = Utilities.trimSku(s);
-    String id = String.format("<span itemprop=productID>%s</span>", s.substring(0, s.length() - 1));
-    String id2 = String.format("Item # %s", s.substring(0, s.length() - 1));
+    String id = String.format("<span itemprop=productID>%s</span>", sku);
+    String id2 = String.format("Item # %s", sku);
     if (html.contains("<div id=moneyBoxJson style=display:none>")) {
       int start = html.indexOf("<div id=moneyBoxJson style=display:none>") + "<div id=moneyBoxJson style=display:none>".length();
       int end = html.indexOf("</div>", start);
