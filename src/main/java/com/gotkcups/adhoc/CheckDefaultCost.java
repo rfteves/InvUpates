@@ -7,32 +7,35 @@ package com.gotkcups.adhoc;
 
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.JDocument;
-import com.gotkcups.io.GateWay;
+import com.gotkcups.io.RestHelper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author rfteves
  */
-public class CheckDefaultCost {
+@Component
+@Profile("check")
+public class CheckDefaultCost implements CommandLineRunner {
 
-  /**
-   * @param args the command line arguments
-   */
-  public static void main(String[] args) throws Exception {
-    doit();
-  }
+  @Autowired
+  protected RestHelper restHelper;
   
-  private static void doit() throws Exception {
+  @Override
+  public void run(String... strings) throws Exception {
     Map<String, String> params = new HashMap<>();
     params.put("fields", "id,title,variants");
     Set<Document> sorted = new TreeSet<>();
-    Document resp = GateWay.getAllProducts("prod", params, 150, -1);
+    Document resp = restHelper.getAllProducts(params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
       if (!(product.getLong("id") == 59082047511L
@@ -55,7 +58,7 @@ public class CheckDefaultCost {
     }
     for (Document variant : sorted) {
       System.out.println("Querying " + variant.get("product_title"));
-      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
+      Document metafield = restHelper.getProductMetafield(variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         Document values = Document.parse(value);

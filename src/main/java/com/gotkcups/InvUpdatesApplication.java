@@ -35,7 +35,7 @@ public class InvUpdatesApplication extends SpringBootServletInitializer {
       boolean nowebapp = Optional.of(Arrays.asList(args).stream().filter(arg->arg.equals("-nowebapp")).findFirst().isPresent()).orNull();
       
       //Arrays.asList(args).stream().filter(arg->arg.equals("-nowebapp")).forEach(nowebapp=true;);
-      GateWay.init();
+      //GateWay.init();
         //SpringApplication.run(InvUpdatesApplication.class, args);
         new SpringApplicationBuilder(InvUpdatesApplication.class).web(!nowebapp).run(args);
     }

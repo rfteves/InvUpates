@@ -6,6 +6,7 @@
 package com.gotkcups.adhoc;
 
 import com.gotkcups.forms.Login;
+import com.gotkcups.io.RestHelper;
 import com.gotkcups.io.Utilities;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -17,17 +18,24 @@ import org.apache.http.NameValuePair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ricardo
  */
-public class KeurigPoints {
+@Component
+@Profile("check")
+public class KeurigPoints implements CommandLineRunner {
 
-  /**
-   * @param args the command line arguments
-   */
-  public static void main(String[] args) throws Exception {
+  @Autowired
+  protected RestHelper restHelper;
+  
+  @Override
+  public void run(String... strings) throws Exception {
     String[]prefixes = {"client", "buyer"};
     Arrays.asList(prefixes).stream().forEach(prefix->{
       try {

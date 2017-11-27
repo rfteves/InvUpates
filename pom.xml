@@ -151,7 +151,7 @@
                         <manifest>
                             <mainClass>com.gotkcups.InvUpdatesApplication</mainClass>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>target/lib</classpathPrefix>
+                            <classpathPrefix>lib</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>
@@ -164,13 +164,13 @@
                     <target>1.8</target>
                 </configuration>
             </plugin -->
-            <plugin>
+            <!-- plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.gotkcups.InvUpdatesApplication</mainClass>
                     <profiles>
-                        <!-- profile>selene</profile -->
+                        <profile>selene</profile>
                         <profile>prod</profile>
                         <profile>gpa</profile>
                     </profiles>
@@ -185,8 +185,8 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <!-- plugin>
+            </plugin -->
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -201,10 +201,10 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin -->
+            </plugin>
         </plugins>
     </build>
-    <repositories>
+    <!-- repositories>
         <repository>
             <id>spring-releases</id>
             <name>Spring Releases</name>
@@ -217,5 +217,5 @@
             <name>Spring Releases</name>
             <url>https://repo.spring.io/libs-release</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories -->
 </project>

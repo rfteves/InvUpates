@@ -6,14 +6,11 @@
 package com.gotkcups.io;
 
 import com.gotkcups.forms.Login;
-import java.util.Date;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
