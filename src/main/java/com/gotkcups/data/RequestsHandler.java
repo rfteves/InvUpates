@@ -234,14 +234,14 @@ public class RequestsHandler extends Thread {
     return retval;
   }
 
-  static {
+  /*static {
     System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));
     System.getProperties().setProperty("mail.username", Utilities.getApplicationProperty("mail.username"));
     System.getProperties().setProperty("mail.password", Utilities.getApplicationProperty("mail.password"));
     System.getProperties().setProperty("mail.smtp.port", Utilities.getApplicationProperty("mail.smtp.port"));
     System.getProperties().put("mail.smtp.auth", "true");
     System.getProperties().put("mail.smtp.starttls.enable", "true");
-  }
+  }*/
 
   private static long lastSent = 0;
 

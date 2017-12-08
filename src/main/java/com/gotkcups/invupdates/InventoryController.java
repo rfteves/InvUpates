@@ -5,11 +5,19 @@
  */
 package com.gotkcups.invupdates;
 
+
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.MongoDBJDBC;
 import com.gotkcups.data.RequestsHandler;
+import com.gotkcups.data.SingleProduct;
 import com.gotkcups.io.Utilities;
+import com.gotkcups.model.Keurigorders;
+import com.gotkcups.model.Orderstagged;
+import com.gotkcups.repos.KeurigordersJpaController;
+import com.gotkcups.repos.OrderstaggedJpaController;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.http.HttpServletRequest;
 import org.bson.Document;
@@ -26,6 +34,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -35,6 +44,15 @@ import org.apache.commons.logging.LogFactory;
 @RequestMapping("/")
 public class InventoryController {
 
+  @Autowired
+  private SingleProduct singleProduct;
+  
+  @Autowired
+  private KeurigordersJpaController keurigOrdersJpa;
+  
+  @Autowired
+  private OrderstaggedJpaController ordersTaggedJpa;
+  
   private final static Log log = LogFactory.getLog(InventoryController.class);
 
   /*@RequestMapping(method = GET)
@@ -68,6 +86,11 @@ public class InventoryController {
   }
   private static final String template = "Hello, %s!";
   private final AtomicLong counter = new AtomicLong();
+
+  @RequestMapping("/{id}.url")
+  public String url(@PathVariable Long id) {
+    return singleProduct.getUrl(id);
+  }
 
   @RequestMapping("/{id}.product")
   public Document update(@PathVariable Long id) {
@@ -119,12 +142,31 @@ public class InventoryController {
     return bean;
   }
 
-  static {
+  @RequestMapping("/{marketordernumber}.order")
+  public String ordered(@PathVariable String marketordernumber) {
+    String tagged = null;
+    List<Keurigorders> orders = keurigOrdersJpa.findByMarketordernumber(marketordernumber);
+    List<Orderstagged> taggeds = ordersTaggedJpa.findByMarketordernumber(marketordernumber);
+    try {
+      if (!orders.isEmpty()) {
+        tagged = "Warning - ALREADY PROCESSED!!! Order # " + orders.get(0).getKeurigordernumber();
+      } else if (!taggeds.isEmpty()) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss MM/dd/yy");
+        tagged = "Order tagged on " + sdf.format(taggeds.get(0).getDatetagged()) + ".";
+      }
+    } catch (Throwable ex) {
+      ex.printStackTrace();
+    } finally {
+      return tagged;
+    }
+  }
+
+  /*static {
     System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));
     System.getProperties().setProperty("mail.username", Utilities.getApplicationProperty("mail.username"));
     System.getProperties().setProperty("mail.password", Utilities.getApplicationProperty("mail.password"));
     System.getProperties().setProperty("mail.smtp.port", Utilities.getApplicationProperty("mail.smtp.port"));
     System.getProperties().put("mail.smtp.auth", "true");
     System.getProperties().put("mail.smtp.starttls.enable", "true");
-  }
+  }*/
 }

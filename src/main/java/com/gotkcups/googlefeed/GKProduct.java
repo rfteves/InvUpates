@@ -165,6 +165,9 @@ public class GKProduct {
     }
     productEntry.setTargetCountry("US");
     this.initOptions();
+    if(product.containsKey("promotionIds")) {
+      productEntry.setPromotionIds((List)product.get("promotionIds"));
+    }
     return productEntry;
   }
 

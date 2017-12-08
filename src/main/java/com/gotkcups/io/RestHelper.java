@@ -170,13 +170,7 @@ public class RestHelper {
     return so;
   }
 
-  public String getProductMetafields(long productId) {
-    StringBuilder sb = new StringBuilder(env);
-    sb.append(String.format("/admin/products/%d/metafields.json", productId));
-    return RestHttpClient.processGet(sb.toString());
-  }
-
-  public Document getProductMetafieldsPloy(long productId) {
+  public Document getProductMetafields(long productId) {
     Document metas = null;
     StringBuilder sb = new StringBuilder(env);
     sb.append(String.format("/admin/products/%d/metafields.json", productId));
@@ -213,10 +207,10 @@ public class RestHelper {
     return sb.toString();
   }
 
-  public String getProduct(long productId) {
+  public Document getProduct(long productId) {
     StringBuilder url = new StringBuilder(env);
     url.append(String.format("/admin/products/%s.json", productId));
-    return RestHttpClient.processGet(url.toString());
+    return Document.parse(RestHttpClient.processGet(url.toString()));
   }
 
   public String getCountries() {
@@ -226,8 +220,7 @@ public class RestHelper {
   }
 
   public Document getProductMetafield(long id, String namespace, String key) {
-    String meta = this.getProductMetafields(id);
-    Document metas = Document.parse(meta);
+    Document metas = getProductMetafields(id);
     List<Document> metafields = (List) metas.get(Constants.Metafields);
     Document retval = null;
     for (Document metafield : metafields) {

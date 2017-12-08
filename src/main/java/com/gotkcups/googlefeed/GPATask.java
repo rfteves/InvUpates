@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @author rfteves
  */
 @Component
-@Profile("gpa")
+//@Profile("gpa")
 public class GPATask implements CommandLineRunner {
 
   @Autowired

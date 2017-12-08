@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * @author ricardo
  */
 @Component
-@Profile("prod")
+@Profile("check")
 public class UpdateProducts extends AbstractCLR {
 
   private final static Log log = LogFactory.getLog(UpdateProducts.class);
@@ -43,15 +43,15 @@ public class UpdateProducts extends AbstractCLR {
     Document resp = GateWay.getAllProducts("prod", params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 10135803082L
+      if (!(product.getLong("id") == 8856147527L
         || product.getLong("id") == 9760556810993399l
         || product.getLong("id") == 933507564170339999l)) {
-        //continue;
+        continue;
       }
       RequestsHandler.register(product.getLong(Constants.Id));
       //RearrangeVariants.process(product);
     }
-    System.exit(0);
+    //System.exit(0);
   }
   private static StringBuilder message = new StringBuilder();
   public static void main(String[] args) throws Exception {

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ public class UpdatePLA extends Task {
 
   @Override
   public void process(String... args) throws Exception {
+    if (true)return;
     List<Document>filteredProducts = this.getFilteredProducts();
     Map<Long, Product> products = new LinkedHashMap<>();
     long startIndex = counter.incrementAndGet();
@@ -113,22 +115,43 @@ public class UpdatePLA extends Task {
   private List<Document> getFilteredProducts() throws IOException, ParseException {
     Calendar today = Calendar.getInstance();
     Map<String, String> params = new HashMap<>();
+    // Google Products
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
-    Document resp = restHelper.getAllCollects(params, 120, -1);
-    List<Document> collects = (List) resp.get(Constants.Collects);
-    long updated_at = today.getTimeInMillis() - (12 * ONE_HOUR);
+    Document googleProducts = restHelper.getAllCollects(params, 120, -1);
+    List<Document> googleProductsCollects = (List) googleProducts.get(Constants.Collects);
+    // Keurig Small Boxes
+    params.put(Constants.Collection_Id, Constants.KeurigSmallBoxes_CollectionId.toString());
+    Document keurigSmallProducts = restHelper.getAllCollects(params, 120, -1);
+    List<Document> keurigSmallProductsCollects = (List) keurigSmallProducts.get(Constants.Collects);
+    
+    long updated_at = today.getTimeInMillis() - (2 * ONE_DAY);
     Set<Long>validIds = new HashSet<>();
-    for (Document collect : collects) {
+    for (Document collect : googleProductsCollects) {
       validIds.add(collect.getLong(Constants.Product_Id));
     }
     params.clear();
     //params.put("fields", "id,title,variants,updated_at");
-    resp = GateWay.getAllProducts("prod", params, 150, -1);
-    List<Document>products = (List) resp.get("products");
+    googleProducts = GateWay.getAllProducts("prod", params, 150, -1);
+    List<Document>products = (List) googleProducts.get("products");
     List<Document>filtered = new ArrayList<>();
-    long debugProduct = 0;//11865486474L;
+    //long debugProduct = 10015252106L;//8199286919L;
+    long debugProduct = 0L;
     for (Document product : products) {
       Date updated = Utilities.parseDate(product.getString("updated_at"));
+      if(product.getLong(Constants.Id) == 8199286919L
+        || product.getLong(Constants.Id) == 10015252106L
+        ) {
+        product.append("promotionIds", Arrays.asList("2017XMAS"));
+        filtered.add(product);
+      } else {
+        for (Document keurigSmallProduct : keurigSmallProductsCollects) {
+          if(keurigSmallProduct.getLong(Constants.Id).longValue() ==
+            product.getLong(Constants.Id).longValue()) {
+            product.append("promotionIds", Arrays.asList("XMAS2017"));
+            break;
+          }
+        }
+      }
       if(product.getLong(Constants.Id) == debugProduct) {
         filtered.add(product);
         break;
