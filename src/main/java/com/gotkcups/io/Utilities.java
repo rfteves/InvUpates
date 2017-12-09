@@ -47,8 +47,8 @@ public class Utilities {
   private static Map<String, String> KEYS = new HashMap<String, String>();
 
   static {
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
-    Utilities.initKeys();
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.client.protocol.ResponseProcessCookies", "fatal");
+    //Utilities.initKeys();
   }
 
   public static void initProductionKeys() {

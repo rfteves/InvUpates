@@ -13,8 +13,8 @@ import com.gotkcups.data.SingleProduct;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.model.Keurigorders;
 import com.gotkcups.model.Orderstagged;
-import com.gotkcups.repos.KeurigordersJpaController;
-import com.gotkcups.repos.OrderstaggedJpaController;
+import com.gotkcups.repos.KeurigordersJpaRepository;
+import com.gotkcups.repos.OrderstaggedJpaRepository;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -48,10 +48,10 @@ public class InventoryController {
   private SingleProduct singleProduct;
   
   @Autowired
-  private KeurigordersJpaController keurigOrdersJpa;
+  private KeurigordersJpaRepository keurigOrdersJpa;
   
   @Autowired
-  private OrderstaggedJpaController ordersTaggedJpa;
+  private OrderstaggedJpaRepository ordersTaggedJpa;
   
   private final static Log log = LogFactory.getLog(InventoryController.class);
 

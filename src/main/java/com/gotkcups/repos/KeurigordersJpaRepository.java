@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
  *
  * @author rfteves
  */
-public interface KeurigordersJpaController extends JpaRepository<Keurigorders, Long> {
+public interface KeurigordersJpaRepository extends JpaRepository<Keurigorders, Long> {
 
   @Query("SELECT k FROM Keurigorders k WHERE k.marketordernumber = :marketordernumber")
   public List<Keurigorders> findByMarketordernumber(@Param("marketordernumber") String marketordernumber);

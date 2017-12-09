@@ -11,8 +11,6 @@ import com.google.api.services.content.model.ProductsCustomBatchRequest;
 import com.google.api.services.content.model.ProductsCustomBatchRequestEntry;
 import com.google.api.services.content.model.ProductsCustomBatchResponse;
 import com.gotkcups.data.Constants;
-import com.gotkcups.data.RequestsHandler;
-import com.gotkcups.io.GateWay;
 import com.gotkcups.io.RestHelper;
 import com.gotkcups.io.Utilities;
 import java.io.IOException;
@@ -33,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,6 +39,7 @@ import org.springframework.stereotype.Component;
  * @author rfteves
  */
 @Component
+@Profile("prod")
 public class UpdatePLA extends Task {
 
   private AtomicLong counter = new AtomicLong();
@@ -60,7 +60,7 @@ public class UpdatePLA extends Task {
 
   @Override
   public void process(String... args) throws Exception {
-    if (true)return;
+    //if (true)return;
     List<Document>filteredProducts = this.getFilteredProducts();
     Map<Long, Product> products = new LinkedHashMap<>();
     long startIndex = counter.incrementAndGet();
@@ -94,7 +94,7 @@ public class UpdatePLA extends Task {
         entry.setProductId(productEntry.getOfferId());
         entry.setMethod("insert");
         entries.add(entry);
-        System.out.println(productEntry.toString());
+        //System.out.println(productEntry.toString());
       });
     if (entries.isEmpty()) {
       return;
@@ -124,14 +124,14 @@ public class UpdatePLA extends Task {
     Document keurigSmallProducts = restHelper.getAllCollects(params, 120, -1);
     List<Document> keurigSmallProductsCollects = (List) keurigSmallProducts.get(Constants.Collects);
     
-    long updated_at = today.getTimeInMillis() - (2 * ONE_DAY);
+    long updated_at = today.getTimeInMillis() - (6 * ONE_DAY);
     Set<Long>validIds = new HashSet<>();
     for (Document collect : googleProductsCollects) {
       validIds.add(collect.getLong(Constants.Product_Id));
     }
     params.clear();
     //params.put("fields", "id,title,variants,updated_at");
-    googleProducts = GateWay.getAllProducts("prod", params, 150, -1);
+    googleProducts = restHelper.getAllProducts(params, 150, -1);
     List<Document>products = (List) googleProducts.get("products");
     List<Document>filtered = new ArrayList<>();
     //long debugProduct = 10015252106L;//8199286919L;

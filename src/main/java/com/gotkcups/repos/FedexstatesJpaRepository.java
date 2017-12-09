@@ -5,7 +5,8 @@
  */
 package com.gotkcups.repos;
 
-import com.gotkcups.model.Orderstagged;
+import com.gotkcups.model.Fedexstates;
+import com.gotkcups.model.Keurigorders;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,8 +16,8 @@ import org.springframework.data.repository.query.Param;
  *
  * @author rfteves
  */
-public interface OrderstaggedJpaController extends JpaRepository<Orderstagged, Long> {
+public interface FedexstatesJpaRepository extends JpaRepository<Fedexstates, Long> {
 
-  @Query("SELECT o FROM Orderstagged o WHERE o.marketordernumber = :marketordernumber")
-  public List<Orderstagged> findByMarketordernumber(@Param("marketordernumber") String marketordernumber);
+  //@Query("SELECT f FROM Fedexstates f WHERE f.abbreviation= :abbreviation")
+  public List<Fedexstates> findByAbbreviation(/*@Param("abbreviation")*/ String abbreviation);
 }
