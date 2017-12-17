@@ -71,6 +71,7 @@ public interface Constants {
     String Visits = "visits";
     String URL = "url";
     String Variantid = "variantid";
+    String Variant_Id = "variant_id";
     String Pageid = "pageid";
     String OrdinalCount = "ordinal";
     String ExtraCost = "extra-cost";

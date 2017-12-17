@@ -19,10 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @Component
 public class RestHelper {
-  
+
   @Value("${env}")
   private String env;
-  
+
   public Document getAllProducts(Map<String, String> params) throws IOException {
     return getAllProducts(params, 50, -1);
   }
@@ -171,12 +171,20 @@ public class RestHelper {
   }
 
   public Document getProductMetafields(long productId) {
+    return getProductMetafields(productId, false);
+  }
+
+  public Document getProductMetafields(long productId, boolean raw) {
     Document metas = null;
     StringBuilder sb = new StringBuilder(env);
     sb.append(String.format("/admin/products/%d/metafields.json", productId));
     String json = RestHttpClient.processGet(sb.toString());
-    metas = productMetafields(json);
-    return metas;
+    if (raw) {
+      return Document.parse(json);
+    } else {
+      metas = productMetafields(json);
+      return metas;
+    }
   }
 
   public String updateVariant(long variantId, String data) {
@@ -313,5 +321,43 @@ public class RestHelper {
     this.processParams(url, params);
     sb.append(url);
     return RestHttpClient.processGet(sb.toString());
+  }
+
+  public Document getAllOrders(Map<String, String> params, int pageLimit, int bookLimit) throws IOException {
+    final Document[] object = new Document[1];
+    Document next = null;
+    int page = 0;
+    params.put("limit", "" + pageLimit);
+    int pageMax = pageLimit;
+    while (pageLimit == pageMax) {
+      params.put("page", ++page + "");
+      String take = this.getOrders(params);
+      Document tempdoc = Document.parse(take);
+      if (object[0] == null) {
+        object[0] = tempdoc;
+      } else {
+        next = tempdoc;
+        List<Document> docs = (List) next.get("orders");
+        docs.stream().forEach(((List) object[0].get("orders"))::add);
+      }
+      pageLimit = ((List) tempdoc.get("orders")).size();
+      if (bookLimit < 0) {
+        continue;
+      } else if (((List) object[0].get("orders")).size() >= bookLimit) {
+        break;
+      }
+    }
+    return object[0];
+  }
+
+  public String getOrders(Map<String, String> params) {
+    StringBuilder url = new StringBuilder(env);
+    if (params != null && params.containsKey("id")) {
+      url.append(String.format("/admin/orders/%s.json", params.remove("id").toString()));
+    } else {
+      url.append(String.format("/admin/orders.json"));
+    }
+    this.processParams(url, params);
+    return RestHttpClient.processGet(url.toString());
   }
 }

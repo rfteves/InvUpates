@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @author rfteves
  */
 @Component
-//@Profile("gpa")
+@Profile("prod")
 public class GPATask implements CommandLineRunner {
 
   @Autowired
@@ -29,8 +29,8 @@ public class GPATask implements CommandLineRunner {
 
   @Override
   public void run(String... strings) throws Exception {
-    taxes.process(strings);
+    //taxes.process(strings);
     //metas.process(strings);
-    plas.process(strings);
+    //plas.process(strings);
   }
 }

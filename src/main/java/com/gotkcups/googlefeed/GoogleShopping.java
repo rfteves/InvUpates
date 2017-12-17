@@ -16,7 +16,9 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.content.ShoppingContent;
+import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,7 +74,8 @@ public class GoogleShopping {
   private static final List<String> SCOPES = Arrays.asList(
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/content");
+    "https://www.googleapis.com/auth/content",
+    SheetsScopes.SPREADSHEETS, DriveScopes.DRIVE);
 
   /**
    * Creates an authorized Credential object.

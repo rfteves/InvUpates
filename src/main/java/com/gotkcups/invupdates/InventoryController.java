@@ -6,6 +6,7 @@
 package com.gotkcups.invupdates;
 
 
+import com.gotkcups.configs.MainConfiguration;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.MongoDBJDBC;
 import com.gotkcups.data.RequestsHandler;
@@ -142,6 +143,20 @@ public class InventoryController {
     return bean;
   }
 
+  @RequestMapping("/msg/{message}")
+  public Document message(@PathVariable String message) {
+    config.sendMail().setFrom("ricardo@teves.us");
+    config.sendMail().setTo("ricardo@teves.us");
+    config.sendMail().setTextmessage(message);
+    config.sendMail().setSubject("Quick Msg");
+    config.sendMail().setInited(true);
+    config.sendMailService().add(config.sendMail());
+    Document doc = new Document();
+    doc.append("sendMail", "ricardo@teves.us");
+    doc.append("message", message);
+    return doc;
+  }
+  
   @RequestMapping("/{marketordernumber}.order")
   public String ordered(@PathVariable String marketordernumber) {
     String tagged = null;
@@ -160,6 +175,8 @@ public class InventoryController {
       return tagged;
     }
   }
+  @Autowired
+  private MainConfiguration config;
 
   /*static {
     System.getProperties().setProperty("mail.smtp.host", Utilities.getApplicationProperty("mail.smtp.host"));

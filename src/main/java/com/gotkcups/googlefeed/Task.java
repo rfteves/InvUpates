@@ -8,6 +8,7 @@ package com.gotkcups.googlefeed;
 import com.gotkcups.data.Constants;
 import com.gotkcups.model.Metafield;
 import org.bson.Document;
+import org.springframework.stereotype.Component;
 
 /**
  *

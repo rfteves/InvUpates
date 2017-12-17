@@ -38,7 +38,7 @@ public class UpdateStateTaxes extends Task {
 
   @Override
   public void process(String... args) throws Exception {
-    if (true)return;
+    //if (true)return;
     taxes = new ArrayList<>();
     ProductTax tax = new ProductTax();
     tax.setCountry("US");

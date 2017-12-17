@@ -33,13 +33,13 @@ public class UpdateMetafields extends Task {
 
   @Override
   public void process(String... args) throws Exception {
-    if (true)return;
     Map<String, String> params = new HashMap<>();
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
     Document resp = restHelper.getAllCollects(params, 100, -1);
     List<Document> collects = (List) resp.get(Constants.Collects);
     for (Document collect : collects) {
-      List<Document> metafields = (List) restHelper.getProductMetafields(collect.getLong(Constants.Product_Id)).get(Constants.Metafields);
+      if(collect.getLong(Constants.Product_Id).longValue() != 468118306839L)continue;
+      List<Document> metafields = (List) restHelper.getProductMetafields(collect.getLong(Constants.Product_Id), true).get(Constants.Metafields);
       List<Metafield>metas = new ArrayList<>();
       metafields.stream().forEach(meta->{
         Metafield m = Task.createMetafield(meta);
