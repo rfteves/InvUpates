@@ -38,7 +38,6 @@ public class UpdateMetafields extends Task {
     Document resp = restHelper.getAllCollects(params, 100, -1);
     List<Document> collects = (List) resp.get(Constants.Collects);
     for (Document collect : collects) {
-      if(collect.getLong(Constants.Product_Id).longValue() != 468118306839L)continue;
       List<Document> metafields = (List) restHelper.getProductMetafields(collect.getLong(Constants.Product_Id), true).get(Constants.Metafields);
       List<Metafield>metas = new ArrayList<>();
       metafields.stream().forEach(meta->{

@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -212,7 +213,7 @@ public class BuildProfit implements CommandLineRunner {
   private Map<String, Integer> buildOrders() throws IOException {
     Map<String, String> params = config.stringMap();
     String yesterday = config.getDateConverter().format(config.getCurrentDate(0, true));
-    String monthago = config.getDateConverter().format(config.getCurrentDate(-31, false));
+    String monthago = config.getDateConverter().format(config.getCurrentDate(-45, false));
     params.put("created_at_min", monthago);
     params.put("created_at_max", yesterday);
     params.put("fields", "id,line_items");
@@ -237,6 +238,7 @@ public class BuildProfit implements CommandLineRunner {
     Set<Long> validIds = gpIds.getValidIds();
     Map<String, String> params = config.stringMap();
     params.put("fields", "id,title,product_type,variants");
+    Map<String,Document>sortedVariants=new TreeMap<>();
     List<Document> variantsList = config.documentList();
     Document resp = restHelper.getAllProducts(params, 150, -1);
     List<Document> products = (List) resp.get("products");
@@ -250,9 +252,12 @@ public class BuildProfit implements CommandLineRunner {
         variant.put(Constants.Title, product.getString(Constants.Title));
         variant.put(Constants.Product_Type, product.getString(Constants.Product_Type));
         d.putAll(variant);
-        variantsList.add(d);
+        sortedVariants.put(product.getString(Constants.Product_Type).concat(product.getString(Constants.Title)), d);
       }
     }
+    sortedVariants.keySet().stream().forEach(key->{
+      variantsList.add(sortedVariants.get(key));
+    });
     return variantsList;
   }
 

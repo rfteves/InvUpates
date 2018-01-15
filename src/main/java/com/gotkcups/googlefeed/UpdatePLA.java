@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,25 +56,37 @@ public class UpdatePLA extends Task {
   protected RestHelper restHelper;
   @Value("${google.merchant.id}")
   private BigInteger merchantId;
-  
+
   @Autowired
   private MainConfiguration config;
 
   @Override
   public void process(String... args) throws Exception {
     //if (true)return;
-    List<Document>filteredProducts = this.getFilteredProducts();
+    Calendar today = Calendar.getInstance();
+    long updated_at = today.getTimeInMillis() - (2 * ONE_DAY);
+    List<Document> filteredProducts = this.getFilteredProducts(updated_at);
     Map<Long, Product> products = config.googleModelProductMap();
     long startIndex = config.counter().incrementAndGet();
     for (Document product : filteredProducts) {
       List<Document> variants = (List) product.get(Constants.Variants);
-      variants.stream().forEach(var -> {
+      variants.stream().filter(var
+        -> {
+        String date = var.getString("updated_at");
+        String modified = date.substring(0, date.lastIndexOf(":")) + date.substring(date.lastIndexOf(":") + 1);
+        SimpleDateFormat sdf = config.getDateConverter();
+        Date updated = new Date();
+        try {
+          updated = sdf.parse(modified);
+        } catch (ParseException ex) {
+          Logger.getLogger(UpdatePLA.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return var.getInteger("inventory_quantity") > 0 || updated.getTime() >= updated_at;
+      }
+      ).forEach(var -> {
         Product productEntry = gkp.setProductVariant(product, variants, var.getLong(Constants.Id)).buildProduct();
         products.put(config.counter().incrementAndGet(), productEntry);
-        System.out.println(productEntry.getOfferId());
-        if (productEntry.getOfferId().equals("shopify_US_10769327626_41991345354")) {
-          int u=0;
-        }
+        System.out.println(productEntry.getOfferId() + " " + productEntry.getTitle());
       });
     }
     long endIndex = config.counter().incrementAndGet();
@@ -110,14 +124,14 @@ public class UpdatePLA extends Task {
     }
     this.processProducts(products, start + limit, end, limit);
   }
-  
-  private List<Document> getFilteredProducts() throws IOException, ParseException {
+
+  private List<Document> getFilteredProducts(long updated_at) throws IOException, ParseException {
     // Google Products
     Map<String, String> params = new HashMap<>();
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());
     Document googleProducts = restHelper.getAllCollects(params, 120, -1);
     List<Document> googleProductsCollects = (List) googleProducts.get(Constants.Collects);
-    Set<Long>validIds = new HashSet<>();
+    Set<Long> validIds = new HashSet<>();
     for (Document collect : googleProductsCollects) {
       validIds.add(collect.getLong(Constants.Product_Id));
     }
@@ -125,14 +139,15 @@ public class UpdatePLA extends Task {
     params.put(Constants.Collection_Id, Constants.KeurigSmallBoxes_CollectionId.toString());
     Document keurigSmallProducts = restHelper.getAllCollects(params, 120, -1);
     List<Document> keurigSmallProductsCollects = (List) keurigSmallProducts.get(Constants.Collects);
-    
-    Calendar today = Calendar.getInstance();
-    long updated_at = today.getTimeInMillis() - (24 * ONE_HOUR);
+    Set<Long> smallBoxIds = new HashSet<>();
+    for (Document keurigSmallProduct : keurigSmallProductsCollects) {
+      smallBoxIds.add(keurigSmallProduct.getLong(Constants.Product_Id));
+    }
     params.clear();
     //params.put("fields", "id,title,variants,updated_at");
     googleProducts = restHelper.getAllProducts(params, 150, -1);
-    List<Document>products = (List) googleProducts.get("products");
-    List<Document>filtered = new ArrayList<>();
+    List<Document> products = (List) googleProducts.get("products");
+    List<Document> filtered = new ArrayList<>();
     //long debugProduct = 10015252106L;//8199286919L;
     long debugProduct = 0L;
     for (Document product : products) {
@@ -140,24 +155,20 @@ public class UpdatePLA extends Task {
       String modified = date.substring(0, date.lastIndexOf(":")) + date.substring(date.lastIndexOf(":") + 1);
       SimpleDateFormat sdf = config.getDateConverter();
       Date updated = sdf.parse(modified);
-      if(product.getLong(Constants.Id) == 8199286919L
-        || product.getLong(Constants.Id) == 10015252106L
-        ) {
-        product.append("promotionIds", Arrays.asList("2017XMAS"));
-        filtered.add(product);
-      } else {
-        for (Document keurigSmallProduct : keurigSmallProductsCollects) {
-          if(keurigSmallProduct.getLong(Constants.Id).longValue() ==
-            product.getLong(Constants.Id).longValue()) {
-            product.append("promotionIds", Arrays.asList("XMAS2017"));
-            break;
-          }
-        }
+      if (product.get(Constants.Product_Type).equals("K Cups")) {
+        int y = 0;
       }
-      if(product.getLong(Constants.Id) == debugProduct) {
+      if (product.getLong(Constants.Id) == 8199286919L
+        || product.getLong(Constants.Id) == 10015252106L) {
+        product.append("promotionIds", Arrays.asList("50OFF"));
+        filtered.add(product);
+      } else if (smallBoxIds.contains(product.getLong(Constants.Id))) {
+        product.append("promotionIds", Arrays.asList("STARTSAVING"));
+      }
+      if (product.getLong(Constants.Id) == debugProduct) {
         filtered.add(product);
         break;
-      } else if(debugProduct == 0L && validIds.contains(product.getLong(Constants.Id))
+      } else if (debugProduct == 0L && validIds.contains(product.getLong(Constants.Id))
         && updated.getTime() >= updated_at) {
         filtered.add(product);
       }

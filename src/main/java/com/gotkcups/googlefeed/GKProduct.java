@@ -97,6 +97,7 @@ public class GKProduct {
     price.setCurrency("USD");
     price.setValue(variant.getString(Constants.Price));
     productEntry.setPrice(price);
+    productEntry.setProductType(product.getString(Constants.Product_Type));
 
     ProductShippingWeight weight = new com.google.api.services.content.model.ProductShippingWeight();
     weight.setUnit("g");

@@ -5,7 +5,7 @@
  */
 package com.gotkcups.data;
 
-import com.gotkcups.io.Utilities;
+import com.gotkcups.configs.MainConfiguration;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
@@ -33,31 +33,20 @@ import org.bson.BsonDateTime;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
-/*import com.gotkcups.io.Utilities;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-import org.bson.Document;
-import org.bson.conversions.Bson;*/
 /**
  *
  * @author rfteves
  */
-public class MongoDBJDBC {
 
+@Service
+public class MongoDBJDBC {
+  
+  @Autowired
+  private MainConfiguration config;
   /*public static void main(String args[]) {
 
     try {
@@ -126,11 +115,11 @@ public class MongoDBJDBC {
   private final static Logger log = LoggerFactory.getLogger(MongoDBJDBC.class);
   static Map<String, MongoDatabase> DATABASES = new HashMap<>();
 
-  public static MongoDatabase getDatabase(String name) {
+  public MongoDatabase getDatabase(String name) {
     // To connect to mongodb server
     MongoDatabase database = null;
     if (!DATABASES.containsKey(name)) {
-      MongoCredential credential = MongoCredential.createCredential(Utilities.getApplicationProperty("mongodb.user"), "admin", Utilities.getApplicationProperty("mongodb.password").toCharArray());
+      MongoCredential credential = MongoCredential.createCredential(config.mongodbUser, "admin", config.mongodbPassword.toCharArray());
       MongoClientOptions options = MongoClientOptions.builder().sslEnabled(false).build();
       MongoClient client = new MongoClient(new ServerAddress("teves.us", 27017),
         Arrays.asList(credential), options);
@@ -148,7 +137,7 @@ public class MongoDBJDBC {
     return database;
   }
 
-  public static UpdateResult updateProductIP(Document product) {
+  public UpdateResult updateProductIP(Document product) {
     log.debug("Updating product id " + product.get(Constants._Id));
     UpdateResult result = null;
     try {
@@ -167,7 +156,7 @@ public class MongoDBJDBC {
     }
   }
 
-  public static Calendar getProductLastUpdate(Document product) {
+  public Calendar getProductLastUpdate(Document product) {
     Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
     MongoDatabase database = getDatabase(Constants.Table_GotKcups);
     MongoCollection<Document> products = database.getCollection(Constants.Collection_Product_IP);
@@ -183,7 +172,7 @@ public class MongoDBJDBC {
     return now;
   }
 
-  public static UpdateResult updateVariantIP(Document variant, StringBuilder message) {
+  public UpdateResult updateVariantIP(Document variant, StringBuilder message) {
     log.debug("Updating variant id " + variant.get(Constants.Id));
     UpdateResult result = null;
     try {

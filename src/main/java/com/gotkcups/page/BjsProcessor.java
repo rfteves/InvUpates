@@ -18,14 +18,20 @@ import org.bson.Document;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author rfteves
  */
+@Service
 public class BjsProcessor {
 
-  public static void costing(Document variant, String html) {
+  @Autowired
+  private Utilities utilities;
+  
+  public void costing(Document variant, String html) {
     if (html == null) {
       variant.put(Constants.Status, Constants.Page_Not_Available);
       return;
@@ -40,16 +46,15 @@ public class BjsProcessor {
     if (model != null) {
       int start = 0, end = 0;
       String s = (String) variant.get("sku");
-      String sku = Utilities.trimSku(s);
+      String sku = utilities.trimSku(s);
       String idp = model.text();
       if (idp.contains(sku)) {
-        String available = doc.getElementById("itemNotAvail").attr("style");
         if (doc.getElementsByClass("unvailable-icn").isEmpty()) {
           boolean shippingIncluded = false;
           variant.put(Constants.Status, Constants.In_Stock);
           variant.put(Constants.Min_Quantity, 1);
           variant.put(Constants.Discounted, false);
-          if (doc.getElementsByClass("shipping").size() == 1
+          if (doc.getElementsByClass("shipping").size() >= 1
             && doc.getElementsByClass("shipping").get(0).text().contains("Shipping Included")) {
             shippingIncluded = true;
           }

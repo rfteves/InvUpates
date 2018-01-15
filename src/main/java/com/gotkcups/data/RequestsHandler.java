@@ -5,8 +5,7 @@
  */
 package com.gotkcups.data;
 
-import com.gotkcups.adhoc.UpdateProducts;
-import com.gotkcups.io.GateWay;
+import com.gotkcups.io.RestHelper;
 import com.gotkcups.io.Utilities;
 import com.gotkcups.page.DocumentProcessor;
 import com.gotkcups.sendmail.SendMail;
@@ -22,7 +21,7 @@ import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,11 +31,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class RequestsHandler extends Thread {
 
+  @Autowired
+  protected RestHelper restHelper;
+  
+  @Autowired
+  protected MongoDBJDBC mongodb;
+  
+  @Autowired
+  protected DocumentProcessor documentProcessor;
+  
   private final static Log log = LogFactory.getLog(RequestsHandler.class);
-  private final static List<Document> REQUESTS = new ArrayList<>();
-  private static RequestsHandler HANDLER;
+  private final List<Document> REQUESTS = new ArrayList<>();
 
-  public static void registerProduct(Document product) {
+  public void registerProduct(Document product) {
     List<Document> variants = (List) product.get("variants");
     Set<Document> sorted = new TreeSet<>();
     for (Document variant : variants) {
@@ -46,7 +53,7 @@ public class RequestsHandler extends Thread {
     }
     // Get variant infos
     for (Document variant : sorted) {
-      Document metafield = GateWay.getProductMetafield("prod", variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
+      Document metafield = restHelper.getProductMetafield(variant.getLong(Constants.Product_Id), Constants.Inventory, Constants.Vendor);
       if (metafield != null) {
         String value = metafield.getString("value");
         variant.append("debug", product.get("debug"));
@@ -74,42 +81,37 @@ public class RequestsHandler extends Thread {
       } else if (status == null) {
         status = Constants.Out_Of_Stock;
       }
-      RequestsHandler.updateVariant(status, currentStatus, price, currentPrice, variant);
-      MongoDBJDBC.updateVariantIP(variant, message);
+      updateVariant(status, currentStatus, price, currentPrice, variant);
+      mongodb.updateVariantIP(variant, message);
       log.info(String.format("Variant %s, %s ", variant.getLong(Constants.Product_Id), message.toString()));
     }
   }
   private final static int MAX_PURCHASE = 11500;
-  private static StringBuilder message = new StringBuilder();
+  private StringBuilder message = new StringBuilder();
 
-  public static void register(long id) {
+  public void register(long id) {
     register(id, false);
   }
 
-  public static void register(long id, boolean debug) {
+  public void register(long id, boolean debug) {
     log.info("Register product " + id);
-    String json = GateWay.getProduct(Constants.Production, id);
-    Document result = Document.parse(json);
+    Document result = restHelper.getProduct(id);
     Document product = (Document) result.get(Constants.Product);
     product.append("debug", debug);
     registerProduct(product);
   }
 
-  public static void register(Document variant) {
-    if (HANDLER == null || !HANDLER.isAlive()) {
-      synchronized (REQUESTS) {
-        if (HANDLER == null) {
-          HANDLER = new RequestsHandler();
-          HANDLER.start();
-        }
-      }
+  public void register(Document variant) {
+    if (!this.isAlive()) {
+      this.start();
     }
-    HANDLER.add(variant);
+    add(variant);
   }
 
   private boolean accessing;
 
   private void add(Document variant) {
+    System.out.println("Adding variant");
     synchronized (this) {
       while (accessing) {
         try {
@@ -119,6 +121,7 @@ public class RequestsHandler extends Thread {
         }
       }
       REQUESTS.add(variant);
+      System.out.println("Variant added");
       accessing = true;
       this.notifyAll();
     }
@@ -131,19 +134,22 @@ public class RequestsHandler extends Thread {
       synchronized (this) {
         while (!accessing) {
           try {
+            System.out.println("thread waiting " + accessing);
             this.wait();
+            System.out.println("thread waiting done " + accessing);
           } catch (InterruptedException ex) {
             Logger.getLogger(RequestsHandler.class.getName()).log(Level.SEVERE, null, ex);
           }
         }
         if (!REQUESTS.isEmpty()) {
+          System.out.println("Retrieve variant ");
           variant = REQUESTS.remove(0);
         }
         accessing = false;
         this.notifyAll();
       }
       if (variant != null) {
-        DocumentProcessor.accept(urls, variant);
+        documentProcessor.accept(urls, variant);
       }
       if (urls.size() > 30) {
         urls.clear();
@@ -151,7 +157,7 @@ public class RequestsHandler extends Thread {
     }
   }
 
-  public static void updateVariant(String status, String currentStatus, Double price, double currentPrice,
+  public void updateVariant(String status, String currentStatus, Double price, double currentPrice,
     Document variant) {
     message.setLength(0);
     int minQty = 0, maxQty = 0, qty = 0;
@@ -197,7 +203,7 @@ public class RequestsHandler extends Thread {
       change.put(Constants.Id, variant.getLong(Constants.Id));
       if (status.equals(Constants.In_Stock)) {
         change.put(Constants.Inventory_Quantity, qty);
-        if (RequestsHandler.isPriceOkToChange(variant, price, currentPrice)) {
+        if (isPriceOkToChange(variant, price, currentPrice)) {
           change.put(Constants.Price, price.toString());
         }
         change.put(Constants.Compare_At_Price, Double.valueOf(0d).toString());
@@ -210,14 +216,14 @@ public class RequestsHandler extends Thread {
       message.insert(0, variant.getLong(Constants.Id));
       System.out.println(message.toString());
       int debug = 0;
-      GateWay.updateVariant(Constants.Production, variant.getLong(Constants.Id), pack.toJson());
+      restHelper.updateVariant(variant.getLong(Constants.Id), pack.toJson());
     } else {
       System.out.println(message.toString());
     }
   }
-  private static List<String> messages = new ArrayList<>();
+  private List<String> messages = new ArrayList<>();
 
-  public static boolean isPriceOkToChange(Document variant, Double price, Double currentPrice) {
+  public boolean isPriceOkToChange(Document variant, Double price, Double currentPrice) {
     boolean retval = false;
     if (price.doubleValue() >= currentPrice.doubleValue()) {
       retval = true;
@@ -227,7 +233,7 @@ public class RequestsHandler extends Thread {
       if (ratio > 0.20) {
         messages.add(String.format("Price change > %s, product %s %f to %f<br>", "20%",
           variant.getString(Constants.Sku), currentPrice, price));
-        RequestsHandler.notifyMessages();
+        notifyMessages();
       } else {
         retval = true;
       }
@@ -237,9 +243,9 @@ public class RequestsHandler extends Thread {
 
   
 
-  private static long lastSent = 0;
+  private long lastSent = 0;
 
-  private static void notifyMessages() {
+  private void notifyMessages() {
     if (messages.size() == 0 || lastSent > System.currentTimeMillis()) {
       return;
     }

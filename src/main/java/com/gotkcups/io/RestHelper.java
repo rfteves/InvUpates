@@ -12,12 +12,13 @@ import java.util.Map;
 import org.bson.Document;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author rfteves
  */
-@Component
+@Service
 public class RestHelper {
 
   @Value("${env}")
@@ -228,7 +229,7 @@ public class RestHelper {
   }
 
   public Document getProductMetafield(long id, String namespace, String key) {
-    Document metas = getProductMetafields(id);
+    Document metas = getProductMetafields(id, true);
     List<Document> metafields = (List) metas.get(Constants.Metafields);
     Document retval = null;
     for (Document metafield : metafields) {

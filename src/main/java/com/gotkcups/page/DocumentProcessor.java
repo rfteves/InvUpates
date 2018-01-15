@@ -20,23 +20,35 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Ricardo
  */
+@Service
 public class DocumentProcessor extends Thread {
 
+  @Autowired
+  private BjsProcessor bjsProcessor;
+  @Autowired
+  private CostcoProcessor costcoProcessor;
+  @Autowired
+  private KeurigProcessor keurigProcessor;
+  @Autowired
+  private SamsclubProcessor samsclubProcessor;
+  
   private static boolean processing;
   private final static Log log = LogFactory.getLog(DocumentProcessor.class);
 
-  public static void accept(Map<String, String> urls, Document vendors) {
+  public void accept(Map<String, String> urls, Document vendors) {
     processing = true;
     process(urls, vendors);
     processing = false;
   }
 
-  private static void process(Map<String, String> urls, Document variant) {
+  private void process(Map<String, String> urls, Document variant) {
     Document vendori = (Document) variant.get("vendor");
     //System.out.println("Start processing " + vendor.getString(Constants.Sku));
     String key = (String) vendori.get("url");
@@ -70,7 +82,7 @@ public class DocumentProcessor extends Thread {
     log.info(String.format("DocProcessing %s %s done", variant.get(Constants.Product_Id), variant.get(Constants.Sku)));
   }
 
-  private static String fetchPage(String url) {
+  private String fetchPage(String url) {
     String html = null;
     int trials = 3;
     while (html == null && trials-- > 0) {
@@ -83,22 +95,22 @@ public class DocumentProcessor extends Thread {
     return html;
   }
 
-  private static void fetchCost(Document variant, String key, String html) {
+  private void fetchCost(Document variant, String key, String html) {
     if (key.contains("samsclub.com")) {
-      SamsclubProcessor.costing(variant, html);
+      samsclubProcessor.costing(variant, html);
     } else if (key.contains("costco.com")) {
-      CostcoProcessor.costing(variant, html);
+      costcoProcessor.costing(variant, html);
     } else if (key.contains("keurig.com")) {
-      KeurigProcessor.costing(variant, html);
+      keurigProcessor.costing(variant, html);
     } else if (key.contains("bjs.com")) {
-      BjsProcessor.costing(variant, html);
+      bjsProcessor.costing(variant, html);
     }
   }
   public final static double MARKUP_TAXABLE = 0.82;
   public final static double MARKUP_NON_TAXABLE = 0.9;
   public final static double MARKUP_DISCOUNT = 0.04;
 
-  private static void calculatePrice(Document variant) {
+  private void calculatePrice(Document variant) {
     if (!variant.containsKey(Constants.Status)) {
       variant.put(Constants.Status, Constants.Page_Not_Available);
       return;

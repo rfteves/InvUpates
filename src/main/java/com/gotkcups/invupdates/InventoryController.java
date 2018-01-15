@@ -54,6 +54,12 @@ public class InventoryController {
   @Autowired
   private OrderstaggedJpaRepository ordersTaggedJpa;
   
+  @Autowired
+  private RequestsHandler requestsHandler;
+  
+  @Autowired
+  protected MongoDBJDBC mongodb;
+  
   private final static Log log = LogFactory.getLog(InventoryController.class);
 
   /*@RequestMapping(method = GET)
@@ -102,10 +108,10 @@ public class InventoryController {
     _id.put(Constants.Product_Id, id);
     _id.put(Constants.Remote_Host, request.getRemoteHost());
     product.put(Constants._Id, _id);
-    Calendar lastUpdate = MongoDBJDBC.getProductLastUpdate(product);
-    MongoDBJDBC.updateProductIP(product);
+    Calendar lastUpdate = mongodb.getProductLastUpdate(product);
+    mongodb.updateProductIP(product);
     if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 2)) {
-      RequestsHandler.register(id);
+      requestsHandler.register(id);
     }
     return product;
   }
@@ -118,7 +124,7 @@ public class InventoryController {
     Document _id = new Document();
     _id.put(Constants.Product_Id, id);
     _id.put(Constants.Remote_Host, request.getRemoteHost());
-    RequestsHandler.register(id, true);
+    requestsHandler.register(id, true);
     return product;
   }
 

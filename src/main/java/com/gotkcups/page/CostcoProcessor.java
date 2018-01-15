@@ -21,18 +21,24 @@ import org.bson.Document;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author rfteves
  */
+@Service
 public class CostcoProcessor {
 
-  public static void costing(Document variant, String html) {
+  @Autowired
+  private Utilities utilities;
+  
+  public void costing(Document variant, String html) {
     dig(variant, html);
   }
 
-  public static void dig(Document vendor, String html) {
+  public void dig(Document vendor, String html) {
     if (html == null) {
       vendor.put(Constants.Status, Constants.Page_Not_Available);
       return;
@@ -46,7 +52,7 @@ public class CostcoProcessor {
     if (s.equals("1074897C")) {
       int b = 0;
     }
-    String sku = Utilities.trimSku(s);
+    String sku = utilities.trimSku(s);
     Document products = (Document) vendor.get(Constants.Costco_Products);
     List<Document> prods = (List) ((List) products.get("products")).get(0);
     Document options = (Document) vendor.get(Constants.Costco_Options);
@@ -67,7 +73,7 @@ public class CostcoProcessor {
     vendor.remove(Constants.Costco_Products);
   }
 
-  private static void initProduct(Document variant, Document product, String html) {
+  private void initProduct(Document variant, Document product, String html) {
     if (!product.getString("inventory").equalsIgnoreCase("IN_STOCK")) {
       variant.put(Constants.Status, Constants.Out_Of_Stock);
       return;
@@ -162,7 +168,7 @@ public class CostcoProcessor {
     }
   }
 
-  private static int retrieveMinimumQuantity(Document variant, String html) {
+  private int retrieveMinimumQuantity(Document variant, String html) {
     Document vendor = (Document) variant.get("vendor");
     int minqty = 1;
     Matcher m = Pattern.compile("Minimum Order Quantity: [0-9]{1,}").matcher(html);
@@ -179,7 +185,7 @@ public class CostcoProcessor {
     }
   }
 
-  public static void initProductOptions(Document vendor, String html) {
+  public void initProductOptions(Document vendor, String html) {
     if (html.contains("var products = ")) {
       int start = html.indexOf("var products = ") + 15;
       int end = html.indexOf("];", start) + 1;
@@ -201,7 +207,7 @@ public class CostcoProcessor {
     }
   }
 
-  private static void describeOptions(Document vendor, Document product, Document options) {
+  private void describeOptions(Document vendor, Document product, Document options) {
     List<Document> opts = (List) ((List) options.get("options")).get(0);
     for (Document option : opts) {
       String key = StringEscapeUtils.unescapeHtml(option.getString("n"));

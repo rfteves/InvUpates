@@ -10,17 +10,23 @@ import com.gotkcups.data.KeurigAnchor;
 import com.gotkcups.data.KeurigSelect;
 import com.gotkcups.io.Utilities;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author rfteves
  */
+@Service
 public class KeurigProcessor {
 
+  @Autowired
+  private Utilities utilities;
+  
   public final static float KEURIG_DISCOUNT_BREWERS = 0.275f;
   public final static float KEURIG_DISCOUNT_BEVERAGES = 0.125f;
 
-  public static void costing(Document variant, String html) {
+  public void costing(Document variant, String html) {
     if (html == null) {
       variant.put(Constants.Status, Constants.Page_Not_Available);
       return;
@@ -40,7 +46,7 @@ public class KeurigProcessor {
         options = options.substring(0, start) + options.substring(end + 8);
         options = options.replaceAll(",", "");
       }
-      KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
+      KeurigSelect select = (KeurigSelect) utilities.objectify(options, new KeurigSelect());
       select.getOption().stream().filter(o -> variant.getString("sku").startsWith(o.getDataCode().concat("K"))).forEach(o -> {
         if (o.getDataStock().equalsIgnoreCase("inStock") && o.getDataPurchasable().equalsIgnoreCase("true")) {
           variant.put(Constants.Status, Constants.In_Stock);

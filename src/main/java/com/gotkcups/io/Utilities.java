@@ -31,18 +31,20 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author rfteves
  */
+@Service
 public class Utilities {
   private final static Log log = LogFactory.getLog(Utilities.class);
 
-  public static void main(String[] s) throws Exception {
-    String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
-    KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
-  }
+//  public static void main(String[] s) throws Exception {
+//    String options = "<select id=\"package-variant-select\" class=\"selectpicker-boxcount\"> <option data-info=\"24 Count\" data-price=\"$13.99\" data-isDiscountPrice=\"false\" data-discount-price=\"\" data-ad-price=\"$10.49\" data-count=\"24\" data-stock=\"inStock\" data-onsale-value=\"\" data-purchasable=\"true\" data-default=\"true\" data-code=\"5000057852\" data-product-type=\"Kcup\" data-product-bmsmEligible=\"false\" data-product-bmsmPriceRows='' data-product-maxOrderQuantity=\"20\" title=\"24 Count\" data-content=\"<span class='count-info'>24 Count</span><span class='right'>$13.99</span>\"> 24 Count <!-- $13.99 --> </option> </select>";
+//    KeurigSelect select = (KeurigSelect) Utilities.objectify(options, new KeurigSelect());
+//  }
 
   private static Map<String, String> KEYS = new HashMap<String, String>();
 

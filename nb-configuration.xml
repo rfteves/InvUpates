@@ -18,9 +18,12 @@ Any value defined here will override the pom.xml file value but is only applicab
     </properties>
     <config-data xmlns="http://www.netbeans.org/ns/maven-config-data/1">
         <configurations>
+            <configuration id="GPATask" profiles=""/>
+            <configuration id="UpdateProducts" profiles="updateproducts"/>
             <configuration id="buildprofit" profiles="buildprofit"/>
             <configuration id="production" profiles=""/>
             <configuration id="selenium" profiles="gpa"/>
+            <configuration id="rollcall" profiles="rollcall"/>
         </configurations>
     </config-data>
 </project-shared-configuration>

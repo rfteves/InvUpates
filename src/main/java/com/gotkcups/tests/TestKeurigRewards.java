@@ -26,7 +26,7 @@ public class TestKeurigRewards {
       System.out.println(a.getDataCode() + ":" + a.getDataPurchasable());
     });*/
     
-      RequestsHandler.register(9760556810L);
+      //RequestsHandler.register(9760556810L);
   }
   
 }

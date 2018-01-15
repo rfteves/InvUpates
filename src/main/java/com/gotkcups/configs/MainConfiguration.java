@@ -30,19 +30,34 @@ import org.springframework.context.annotation.Scope;
 public class MainConfiguration {
 
   @Value("${mail.smtp.host}")
-  private String smtpHost;
+  String smtpHost;
+  
+  @Value("${mongodb.user}")
+  public String mongodbUser;
+  
+  @Value("${mongodb.password}")
+  public String mongodbPassword;
+  
+  @Value("${samsclub.defaultshipping}")
+  public Double samsclubShipping;
+  
+  @Value("${keurig.defaultshipping}")
+  public Double keurigShipping;
+  
+  @Value("${bjs.defaultshipping}")
+  public Double bjsShipping;
 
   @Value("${mail.smtp.username}")
-  private String smtpUsername;
+  String smtpUsername;
 
   @Value("${mail.smtp.password}")
-  private String smtpPassword;
+  String smtpPassword;
 
   @Value("${mail.smtp.port}")
-  private String smtpPort;
+  String smtpPort;
 
   @Value("${gk.timeformat}")
-  private String timeformat;
+  String timeformat;
 
   @Bean
   public AtomicLong counter() {
