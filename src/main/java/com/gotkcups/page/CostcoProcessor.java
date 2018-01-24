@@ -96,7 +96,14 @@ public class CostcoProcessor {
     if (product.getString("price") != null) {
       String str = product.getString("price");
       double cost = Double.parseDouble(Base64Coder.decode(str));
-      variant.put(Constants.Final_Cost, cost);
+      if (variant.getDouble(Constants.List_Cost).doubleValue() > cost) {
+        variant.put(Constants.Final_Cost, variant.getDouble(Constants.List_Cost));
+        variant.put(Constants.List_Cost, cost);
+      } else {
+        variant.put(Constants.Final_Cost, cost);
+      }
+    } else {
+      variant.put(Constants.Final_Cost, variant.getDouble(Constants.List_Cost));
     }
     if (variant.getDouble(Constants.List_Cost) == -1) {
       Elements elements = doc.getElementsByClass("online-price");
@@ -134,7 +141,7 @@ public class CostcoProcessor {
       }
     }
     variant.put(Constants.Discounted, !expired);
-    if (expired) {
+    if (!expired) {
       variant.put(Constants.Final_Cost, variant.get(Constants.List_Cost));
     }
     if (((Document) variant.get("vendor")).containsKey(Constants.ExtraCost)) {

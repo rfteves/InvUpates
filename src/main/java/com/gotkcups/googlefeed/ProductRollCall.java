@@ -48,11 +48,17 @@ public class ProductRollCall implements CommandLineRunner {
     Calendar today = Calendar.getInstance();
     long updated_at = today.getTimeInMillis() - (720 * ONE_DAY);
     List<Document> filteredProducts = this.getFilteredProducts(updated_at);
+    boolean marked = false;
     for (Document product: filteredProducts) {
+      if (true || product.getLong(Constants.Id).longValue() == 10128655114L) {
+        marked = true;
+      }
+      if (!marked)continue;
       List<Document> variants = (List) product.get(Constants.Variants);
-      if (true || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("S")) {
+      if (false || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("C")) {
         requestsHandler.register(product.getLong(Constants.Id));
       }
+      marked = false;
     }
   }
   private List<Document> getFilteredProducts(long updated_at) throws IOException, ParseException {
