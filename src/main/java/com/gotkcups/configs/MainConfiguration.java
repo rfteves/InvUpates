@@ -38,6 +38,12 @@ public class MainConfiguration {
   @Value("${mongodb.password}")
   public String mongodbPassword;
   
+  @Value("${keurig.user}")
+  public String keurigUser;
+  
+  @Value("${keurig.password}")
+  public String keurigPassword;
+  
   @Value("${samsclub.defaultshipping}")
   public Double samsclubShipping;
   

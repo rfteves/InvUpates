@@ -183,7 +183,7 @@ public class SamsclubProcessor {
     } else {
       double newcost = retrieveCosted(html);
       if (retval != newcost) {
-        int y = 0;
+        retval += 1.50;
       }
     }
     return retval;

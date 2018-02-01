@@ -23,6 +23,9 @@ public class KeurigProcessor {
   @Autowired
   private Utilities utilities;
   
+  @Autowired
+  private KeurigRewards keurigRewards;
+  
   public final static float KEURIG_DISCOUNT_BREWERS = 0.275f;
   public final static float KEURIG_DISCOUNT_BEVERAGES = 0.125f;
 
@@ -64,7 +67,7 @@ public class KeurigProcessor {
     } else if (url.contains("/Brewers") || url.contains("/Coffee-Makers")) {
       String s = (String) variant.get("sku");
       String sku = Utilities.trimSku(s);
-      KeurigAnchor anchor = KeurigRewards.getKeurigAnchor(sku);
+      KeurigAnchor anchor = keurigRewards.getKeurigAnchor(sku);
       if (anchor != null && anchor.getDataPurchasable().equalsIgnoreCase("true")) {
         variant.put(Constants.Status, Constants.In_Stock);
         variant.put(Constants.Discounted, false);

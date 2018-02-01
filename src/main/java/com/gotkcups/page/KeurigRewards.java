@@ -5,9 +5,9 @@
  */
 package com.gotkcups.page;
 
+import com.gotkcups.configs.MainConfiguration;
 import com.gotkcups.data.KeurigAnchor;
 import com.gotkcups.io.RestHttpClient;
-import com.gotkcups.io.Utilities;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,27 +34,37 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Ricardo
  */
+@Service
 public class KeurigRewards {
 
-  private static KeurigRewards kw;
+  public KeurigRewards() {
+    globalConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD_STRICT).build();
+    cookieStore = new BasicCookieStore();
+    HttpClientContext context = HttpClientContext.create();
+    context.setCookieStore(cookieStore);
+  }
 
-  public static KeurigAnchor getKeurigAnchor(String sku) {
-    if (kw == null) {
-      kw = new KeurigRewards();
-      kw.login(sku);
-    } else if (kw.life < System.currentTimeMillis()) {
-      kw.cookieStore.clear();
-      kw.logout();
-      kw = new KeurigRewards();
-      kw.login(sku);
+  @Autowired
+  private MainConfiguration config;
+
+  public KeurigAnchor getKeurigAnchor(String sku) {
+    if (rewardsDocument == null) {
+      this.login();
     }
-    kw.settle(sku);
-    return kw.anchor;
+    if (life < System.currentTimeMillis()) {
+      cookieStore.clear();
+      logout();
+      login();
+    }
+    settle(sku);
+    return anchor;
   }
 
   private RequestConfig globalConfig;
@@ -63,20 +73,13 @@ public class KeurigRewards {
   private long life = System.currentTimeMillis() + (10 * 60 * 1000);
   private Document rewardsDocument;
 
-  private KeurigRewards() {
-    globalConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD_STRICT).build();
-    cookieStore = new BasicCookieStore();
-    HttpClientContext context = HttpClientContext.create();
-    context.setCookieStore(cookieStore);
-  }
-
-  private void login(String sku) {
+  private void login() {
     try {
       String postUrl = "https://www.keurig.com/j_spring_security_check";
       String url = "https://www.keurig.com/login";
       String page = this.sendGet(url);
       List<NameValuePair> postParams = this.getFormParams(page,
-        Utilities.getApplicationProperty("keurig.user"), Utilities.getApplicationProperty("keurig.password"));
+        config.keurigUser, config.keurigPassword);
       org.bson.Document cookies = this.sendPost(postUrl, postParams);
       String rewardsUrl = "https://www.keurig.com/membership/rewards-catalog?show=All";
       String rewards = this.sendGet(rewardsUrl);
