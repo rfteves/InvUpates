@@ -64,7 +64,7 @@ public class UpdatePLA extends Task {
   public void process(String... args) throws Exception {
     //if (true)return;
     Calendar today = Calendar.getInstance();
-    long updated_at = today.getTimeInMillis() - (4 * ONE_DAY);
+    long updated_at = today.getTimeInMillis() - (3 * ONE_DAY);
     List<Document> filteredProducts = this.getFilteredProducts(updated_at);
     Map<Long, Product> products = config.googleModelProductMap();
     long startIndex = config.counter().incrementAndGet();
@@ -149,7 +149,7 @@ public class UpdatePLA extends Task {
     List<Document> products = (List) googleProducts.get("products");
     List<Document> filtered = new ArrayList<>();
     //long debugProduct = 10015252106L;//8199286919L;
-    long debugProduct = 0L;
+    long debugProduct = 0;
     for (Document product : products) {
       String date = product.getString("updated_at");
       String modified = date.substring(0, date.lastIndexOf(":")) + date.substring(date.lastIndexOf(":") + 1);

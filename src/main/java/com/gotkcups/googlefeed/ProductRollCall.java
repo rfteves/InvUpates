@@ -50,12 +50,12 @@ public class ProductRollCall implements CommandLineRunner {
     List<Document> filteredProducts = this.getFilteredProducts(updated_at);
     boolean marked = false;
     for (Document product: filteredProducts) {
-      if (true || product.getLong(Constants.Id) == 6945801863L) {
+      if (true || product.getLong(Constants.Id) == 9651696458L) {
         marked = true;
       }
       if (!marked)continue;
       List<Document> variants = (List) product.get(Constants.Variants);
-      if (variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("K")) {
+      if (true || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("B")) {
         requestsHandler.register(product.getLong(Constants.Id));
       }
       marked = false;

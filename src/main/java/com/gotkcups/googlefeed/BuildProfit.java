@@ -136,6 +136,7 @@ public class BuildProfit implements CommandLineRunner {
           }
           if (vendor.containsKey(Constants.DefaultShipping)) {
             defaultshipping = vendor.getDouble(Constants.DefaultShipping);
+            defaultshipping = 0;
           }
           if (minqty >= 5 && price > 50) {
             discount = minqty * BUNDLE_DISCOUNT;
@@ -246,6 +247,7 @@ public class BuildProfit implements CommandLineRunner {
       if (!validIds.contains(product.getLong(Constants.Id))) {
         continue;
       }
+      //if (product.getLong(Constants.Id) != 9585018698l)continue;
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
         Document d = new Document();

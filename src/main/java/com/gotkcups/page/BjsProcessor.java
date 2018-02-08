@@ -66,7 +66,9 @@ public class BjsProcessor {
             && doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").size() == 1) {
             variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").text().substring(1)));
           }
-          variant.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
+          //variant.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
+          String cost = doc.getElementsByClass("online-price").get(0).text();
+          variant.put(Constants.Final_Cost, Double.parseDouble(cost.substring(cost.indexOf("$") + 1)));
           if (shippingIncluded) {
             variant.put(Constants.Shipping, 0d);
           } else if (vendor.containsKey(Constants.Default_Shipping) && vendor.getDouble(Constants.Default_Shipping) > 0) {

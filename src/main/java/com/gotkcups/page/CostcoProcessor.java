@@ -83,8 +83,8 @@ public class CostcoProcessor {
     }
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
     if (doc.getElementById("grocery-fee-amount") != null) {
-      variant.put(Constants.Status, Constants.Out_Of_Stock);
-      return;
+      //variant.put(Constants.Status, Constants.Out_Of_Stock);
+      //return;
     }
     Matcher m = null;
     variant.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));
@@ -152,7 +152,10 @@ public class CostcoProcessor {
     int start = html.indexOf("<p id=\"shipping-statement\">");
     int end = html.indexOf("</p>", start);
     double shipping = 0;
-    if (start != -1) {
+    if (doc.getElementById("grocery-fee-amount") != null) {
+      shipping = 3.0;
+      variant.put(Constants.Shipping, 3.0d);
+    } else if (start != -1) {
       String str = html.substring(start, end);
       m = Pattern.compile("[0-9]{1,}.[0-9]{2}").matcher(str);
       if (m.find()) {
