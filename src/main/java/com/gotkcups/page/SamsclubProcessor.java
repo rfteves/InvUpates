@@ -109,14 +109,17 @@ public class SamsclubProcessor {
     double cost = variant.getDouble(Constants.Final_Cost);
     boolean taxable = ((Document) variant.get("vendor")).getBoolean("taxable");
     if (!taxable) {
-      if (variant.getDouble(Constants.Shipping) == 0 && cost < 50) {
-        cost *= 1.04;
-      } else if (cost < 50) {
-        cost *= 1.02;
-      }
+//      if (variant.getDouble(Constants.Shipping) == 0 && cost < 50) {
+//        cost *= 1.04;
+//      } else if (cost < 50) {
+//        cost *= 1.02;
+//      }
     }
     if (variant.getDouble(Constants.Shipping) == null) {
       variant.put(Constants.Shipping, 0d);
+    }
+    if (((Document) variant.get("vendor")).containsKey(Constants.ExtraCost)) {
+      variant.put(Constants.ExtraCost, ((Document) variant.get("vendor")).get(Constants.ExtraCost));
     }
     variant.put(Constants.Discounted, false);
     cost = Math.floor(cost * 100) / 100;
@@ -191,9 +194,11 @@ public class SamsclubProcessor {
 
   private double retrieveShipping(Document variant, String html) {
     //Shipping trumps defaultShipping
+    org.jsoup.nodes.Document doc = Jsoup.parse(html);
     Document vendor = (Document) variant.get("vendor");
-    if (html.contains("<div class=freeDelvryTxt>") || html.contains(">Free shipping</span>")) {
-      return 0d;
+    if (doc.getElementsByClass("sc-free-shipping-plus-blue").size() != 0 ||
+      doc.getElementsByClass("freeDelvryTxt").size() != 0) {
+      return 7.38d;
     } else {
       // Not free shipping. Either we defined a defaultshipping or get it from application.properties
       if (vendor.get(Constants.Default_Shipping) == null || vendor.getDouble(Constants.Default_Shipping) == 0) {

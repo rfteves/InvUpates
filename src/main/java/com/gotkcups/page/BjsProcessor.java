@@ -59,16 +59,21 @@ public class BjsProcessor {
             shippingIncluded = true;
           }
           boolean discounted = false;
-          if (doc.getElementsByTag("strike").size() == 1) {
-            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByTag("strike").get(0).text().substring(1)));
-            discounted = true;
-          } else if (doc.getElementsByClass("price-container").size() == 1
-            && doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").size() == 1) {
-            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").text().substring(1)));
-          }
+//          if (doc.getElementsByTag("strike").size() == 1) {
+//            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByTag("strike").get(0).text().substring(1)));
+//            discounted = true;
+//          } else if (doc.getElementsByClass("price-container").size() == 1
+//            && doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").size() == 1) {
+//            variant.put(Constants.List_Cost, Double.parseDouble(doc.getElementsByClass("price-container").get(0).getElementsByClass("amount").text().substring(1)));
+//          }
           //variant.put(Constants.Final_Cost, Double.parseDouble(doc.getElementById("addToCartPrice").attr("value")));
-          String cost = doc.getElementsByClass("online-price").get(0).text();
-          variant.put(Constants.Final_Cost, Double.parseDouble(cost.substring(cost.indexOf("$") + 1)));
+          String cost = doc.getElementsByClass("logged-out").get(0).getElementsByClass("amount").get(0).text();
+          String onlineCost = doc.getElementsByClass("logged-out").get(0).getElementsByClass("online-price").get(0).text();
+          if (onlineCost.indexOf("$") == -1) {
+            onlineCost = cost;
+          }
+          variant.put(Constants.Final_Cost, Math.max(Double.parseDouble(cost.substring(cost.indexOf("$") + 1)),
+            Double.parseDouble(onlineCost.substring(onlineCost.indexOf("$") + 1))));
           if (shippingIncluded) {
             variant.put(Constants.Shipping, 0d);
           } else if (vendor.containsKey(Constants.Default_Shipping) && vendor.getDouble(Constants.Default_Shipping) > 0) {

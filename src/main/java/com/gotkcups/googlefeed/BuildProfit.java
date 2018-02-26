@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,6 +70,16 @@ public class BuildProfit implements CommandLineRunner {
     Map<String, Integer> ordersMap = this.buildOrders();
     List<Document> variants = this.buildVariants();
     this.updateProfitSheet(variants, ordersMap);
+    new Thread(new Runnable() {
+      public void run() {
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+          Logger.getLogger(BuildProfit.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.exit(0);
+      }
+    }).start();
   }
 
   private void updateProfitSheet(List<Document> variants, Map<String, Integer> orders) throws IOException {
@@ -118,7 +130,11 @@ public class BuildProfit implements CommandLineRunner {
           break;
         }
       }
-      if (metarecord == null) {
+      if (variant.getInteger(Constants.Inventory_Quantity) == 0) {
+        cellValues.add(new CellData()
+          .setUserEnteredValue(new ExtendedValue()
+            .setNumberValue(0.00d)));
+      } else if (metarecord == null) {
         double profit = Double.parseDouble(variant.getString("price")) * .10;
         profit = BigDecimal.valueOf(profit).setScale(2, RoundingMode.HALF_UP).doubleValue();
         cellValues.add(new CellData()
@@ -192,6 +208,11 @@ public class BuildProfit implements CommandLineRunner {
         requests.clear();
       }
     }
+//    if (requests.size() >0) {
+//      BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest().setRequests(requests);
+//      service.spreadsheets().batchUpdate(sheetId, request)
+//        .execute();
+//    }
     List<CellData> cellValues = new ArrayList<>();
     cellValues.add(new CellData()
       .setUserEnteredValue(new ExtendedValue()
@@ -214,7 +235,7 @@ public class BuildProfit implements CommandLineRunner {
   private Map<String, Integer> buildOrders() throws IOException {
     Map<String, String> params = config.stringMap();
     String yesterday = config.getDateConverter().format(config.getCurrentDate(0, true));
-    String monthago = config.getDateConverter().format(config.getCurrentDate(-45, false));
+    String monthago = config.getDateConverter().format(config.getCurrentDate(-31, false));
     params.put("created_at_min", monthago);
     params.put("created_at_max", yesterday);
     params.put("fields", "id,line_items");
@@ -239,7 +260,7 @@ public class BuildProfit implements CommandLineRunner {
     Set<Long> validIds = gpIds.getValidIds();
     Map<String, String> params = config.stringMap();
     params.put("fields", "id,title,product_type,variants");
-    Map<String,Document>sortedVariants=new TreeMap<>();
+    Map<String, Document> sortedVariants = new TreeMap<>();
     List<Document> variantsList = config.documentList();
     Document resp = restHelper.getAllProducts(params, 150, -1);
     List<Document> products = (List) resp.get("products");
@@ -247,7 +268,7 @@ public class BuildProfit implements CommandLineRunner {
       if (!validIds.contains(product.getLong(Constants.Id))) {
         continue;
       }
-      //if (product.getLong(Constants.Id) != 9585018698l)continue;
+      //if (product.getLong(Constants.Id) != 113695391767l)continue;
       List<Document> variants = (List) product.get("variants");
       for (Document variant : variants) {
         Document d = new Document();
@@ -257,7 +278,7 @@ public class BuildProfit implements CommandLineRunner {
         sortedVariants.put(product.getString(Constants.Product_Type).concat(product.getString(Constants.Title)), d);
       }
     }
-    sortedVariants.keySet().stream().forEach(key->{
+    sortedVariants.keySet().stream().forEach(key -> {
       variantsList.add(sortedVariants.get(key));
     });
     return variantsList;

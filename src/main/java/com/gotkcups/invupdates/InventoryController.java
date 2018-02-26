@@ -5,7 +5,6 @@
  */
 package com.gotkcups.invupdates;
 
-
 import com.gotkcups.configs.MainConfiguration;
 import com.gotkcups.data.Constants;
 import com.gotkcups.data.MongoDBJDBC;
@@ -47,19 +46,19 @@ public class InventoryController {
 
   @Autowired
   private SingleProduct singleProduct;
-  
+
   @Autowired
   private KeurigordersJpaRepository keurigOrdersJpa;
-  
+
   @Autowired
   private OrderstaggedJpaRepository ordersTaggedJpa;
-  
+
   @Autowired
   private RequestsHandler requestsHandler;
-  
+
   @Autowired
   protected MongoDBJDBC mongodb;
-  
+
   private final static Log log = LogFactory.getLog(InventoryController.class);
 
   /*@RequestMapping(method = GET)
@@ -111,6 +110,9 @@ public class InventoryController {
     Calendar lastUpdate = mongodb.getProductLastUpdate(product);
     mongodb.updateProductIP(product);
     if (Utilities.isMoreThanMinutesAgo(lastUpdate, 1000 * 60 * 2)) {
+      if (!requestsHandler.isAlive()) {
+        requestsHandler.start();
+      }
       requestsHandler.register(id);
     }
     return product;
@@ -162,7 +164,7 @@ public class InventoryController {
     doc.append("message", message);
     return doc;
   }
-  
+
   @RequestMapping("/{marketordernumber}.order")
   public String ordered(@PathVariable String marketordernumber) {
     String tagged = null;

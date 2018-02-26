@@ -102,10 +102,9 @@ public class RequestsHandler extends Thread {
   }
 
   public void register(Document variant) {
-    if (!this.isAlive()) {
-      this.start();
+    if (variant != null) {
+      add(variant);
     }
-    add(variant);
   }
 
   private boolean accessing;

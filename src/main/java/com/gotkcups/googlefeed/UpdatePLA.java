@@ -64,7 +64,7 @@ public class UpdatePLA extends Task {
   public void process(String... args) throws Exception {
     //if (true)return;
     Calendar today = Calendar.getInstance();
-    long updated_at = today.getTimeInMillis() - (3 * ONE_DAY);
+    long updated_at = today.getTimeInMillis() - (1 * ONE_DAY);
     List<Document> filteredProducts = this.getFilteredProducts(updated_at);
     Map<Long, Product> products = config.googleModelProductMap();
     long startIndex = config.counter().incrementAndGet();
@@ -125,7 +125,7 @@ public class UpdatePLA extends Task {
     this.processProducts(products, start + limit, end, limit);
   }
 
-  private List<Document> getFilteredProducts(long updated_at) throws IOException, ParseException {
+  public List<Document> getFilteredProducts(long updated_at) throws IOException, ParseException {
     // Google Products
     Map<String, String> params = new HashMap<>();
     params.put(Constants.Collection_Id, Constants.GoogleProductAds_CollectionId.toString());

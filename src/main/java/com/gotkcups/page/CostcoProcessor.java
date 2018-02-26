@@ -83,8 +83,8 @@ public class CostcoProcessor {
     }
     org.jsoup.nodes.Document doc = Jsoup.parse(html);
     if (doc.getElementById("grocery-fee-amount") != null) {
-      //variant.put(Constants.Status, Constants.Out_Of_Stock);
-      //return;
+      variant.put(Constants.Status, Constants.Out_Of_Stock);
+      return;
     }
     Matcher m = null;
     variant.put(Constants.OrdinalCount, Double.parseDouble(product.getString("ordinal")));

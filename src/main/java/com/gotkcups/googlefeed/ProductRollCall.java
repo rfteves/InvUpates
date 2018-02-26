@@ -34,33 +34,42 @@ import org.springframework.stereotype.Component;
 @Component
 @Profile("rollcall")
 public class ProductRollCall implements CommandLineRunner {
+
   @Autowired
   protected RestHelper restHelper;
-  
+
   @Autowired
   private MainConfiguration config;
-  
+
   @Autowired
   private RequestsHandler requestsHandler;
-  
+
   @Override
   public void run(String... strings) throws Exception {
     Calendar today = Calendar.getInstance();
-    long updated_at = today.getTimeInMillis() - (720 * ONE_DAY);
+    long updated_at = today.getTimeInMillis() - (60 * ONE_DAY);
     List<Document> filteredProducts = this.getFilteredProducts(updated_at);
     boolean marked = false;
-    for (Document product: filteredProducts) {
-      if (true || product.getLong(Constants.Id) == 9651696458L) {
+    for (Document product : filteredProducts) {
+      if (true || product.getLong(Constants.Id) == 6931150791L) {
+      //if (false || product.getLong(Constants.Id) == 7035661383L) {
         marked = true;
       }
-      if (!marked)continue;
+      if (!marked) {
+        continue;
+      }
       List<Document> variants = (List) product.get(Constants.Variants);
-      if (true || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("B")) {
+      if (true || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("S")) {
+      //if (false || variants.get(0).getString(Constants.Sku).toUpperCase().endsWith("C")) {
+        if (!requestsHandler.isAlive()) {
+          requestsHandler.start();
+        }
         requestsHandler.register(product.getLong(Constants.Id));
       }
       marked = false;
     }
   }
+
   private List<Document> getFilteredProducts(long updated_at) throws IOException, ParseException {
     // Google Products
     Map<String, String> params = new HashMap<>();

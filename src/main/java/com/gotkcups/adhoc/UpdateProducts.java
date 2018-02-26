@@ -53,10 +53,13 @@ public class UpdateProducts extends AbstractCLR {
     Document resp = restHelper.getAllProducts(params, 150, -1);
     List<Document> products = (List) resp.get("products");
     for (Document product : products) {
-      if (!(product.getLong("id") == 9541792586L
+      if (!(product.getLong("id") == 95417925866666L
         || product.getLong("id") == 9760556810993399l
-        || product.getLong("id") == 933507564170339999l)) {
+        || product.getLong("id") == 8856147399l)) {
         continue;
+      }
+      if (!requestsHandler.isAlive()) {
+        requestsHandler.start();
       }
       requestsHandler.register(product.getLong(Constants.Id));
       //RearrangeVariants.process(product);

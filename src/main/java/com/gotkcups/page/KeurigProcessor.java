@@ -42,7 +42,7 @@ public class KeurigProcessor {
     if (url.contains("/Beverages") && html.contains("<select id=\"package-variant-select\"")) {
       int start = html.indexOf("<select id=\"package-variant-select\"");
       int end = html.indexOf("</select>", start) + 9;
-      String options = html.substring(start, end).replaceAll("[\t\r\n]", " ").replaceAll("[ ]{2,}", " ");
+      String options = html.substring(start, end).replaceAll("[\t\r\n]", " ").replaceAll("[ ]{2,}", " ").replaceAll(" \\& ", " and ");
       while (options.contains("data-content=\"<span ")) {
         start = options.indexOf(" data-content=\"<span ");
         end = options.indexOf("</span>\">", 20);
